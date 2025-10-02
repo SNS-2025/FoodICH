@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exhibition - What you see is what you eat</title>
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #ea8366 0%, #a24b5b 100%);
+            font-family: 'Helvetica Neue', Arial, 'Noto Sans SC', sans-serif;
+            color: white;
+            min-height: 100vh;
+        }
+
+        #particle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px 40px;
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-top: 40px;
+            align-items: center;
+        }
+
+        .text-content {
+            width: 100%;
+            max-width: 800px;
+            min-width: 300px;
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .text-content h2 {
+            font-size: 2.2em;
+            color: #feca57;
+            margin-bottom: 20px;
+        }
+
+        .text-content h3 {
+            font-size: 1.5em;
+            color: #feca57;
+            margin-top: 30px;
+            margin-bottom: 10px;
+        }
+
+        .text-content p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .video-content {
+            width: 100%;
+            max-width: 800px;
+            min-width: 300px;
+            position: relative;
+            overflow: hidden;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            aspect-ratio: 16 / 9;
+        }
+
+        .video-content iframe {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            border-radius: inherit;
+        }
+
+        @supports not (aspect-ratio: 16 / 9) {
+            .video-content {
+                height: 0;
+                padding-bottom: 56.25%;
+            }
+
+            .video-content iframe {
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+        }
+
+        /* 姹夊牎鑿滃崟鏍峰紡 */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .hamburger-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+        
+        .hamburger-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+        
+        .hamburger-line {
+            width: 20px;
+            height: 2px;
+            background: white;
+            margin: 2px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .hamburger-btn.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .hamburger-btn.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger-btn.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+        
+        .menu-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 15px;
+            padding: 10px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 18px 40px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            min-width: 180px;
+        }
+        
+        .menu-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .menu-item {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 12px 16px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        .menu-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body>
+    <div id="particle-container"></div>
+    <!-- 姹夊牎鑿滃崟 -->
+    <div class="hamburger-menu">
+        <button class="hamburger-btn" onclick="toggleMenu(this)">
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+        </button>
+        <div class="menu-dropdown">
+            <a href="index.html" class="menu-item">Home</a>
+            <a href="about.html" class="menu-item">About</a>
+            <a href="food.html" class="menu-item">Food</a>
+            <a href="exhibition.html" class="menu-item">Exhibition</a>
+            <a href="https://studio.example.com" class="menu-item" target="_blank">Studio</a>
+            <a href="https://instagram.com/futuretensehk" class="menu-item" target="_blank">Instagram</a>
+        </div>
+    </div>
+    <!-- 姹夊牎鑿滃崟 -->
+    <div class="hamburger-menu">
+        <button class="hamburger-btn" onclick="toggleMenu(this)">
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+        </button>
+        <div class="menu-dropdown">
+            <a href="index.html" class="menu-item">Home</a>
+            <a href="about.html" class="menu-item">About</a>
+            <a href="food.html" class="menu-item">Food</a>
+            <a href="exhibition.html" class="menu-item">Exhibition</a>
+            <a href="https://studio.example.com" class="menu-item" target="_blank">Studio</a>
+            <a href="https://instagram.com/futuretensehk" class="menu-item" target="_blank">Instagram</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="video-content">
+                <iframe src="https://www.youtube.com/embed/ia2CZP8bipQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <div class="text-content">
+                <h2>Exhibition Info</h2>
+                <p>Exhibition at Hong Kong Arts Centre Pao Galleries</p>
+                <p>1-15 March 2025</p>
+                <p>Opening Reception: Saturday, 1 March 2025, 7PM</p>
+                <h3>curatorial statement</h3>
+                <p>“our cultural heritage is a process”</p>
+                <p>Cultural heritage consists of not only physical artifacts, but also transient processes, improvised actions, and expressed imaginations that tell us more about the human side of the heritage rather than the physical location itself. In a rapidly evolving technologically enabled world, intangible processes like culinary methods, social customs, and collective imaginations are often neglected, and fail to be recorded as carefully as physical artifacts. FUTURE TENSE HONG KONG is an art-technology-driven exploration of the future of the intangible side of Hong Kong鈥檚 cultural heritage, shaped by social change, climate change, and urban development, as imagined by its residents. This exhibition presents a VR navigation app that immersively maps Hong Kong鈥檚 cultural heritage, a photography and VR exhibit of food imagery generated by workshop participants using state-of-the-art Stable Diffusion technology, two multimedia artworks by Cyan D鈥橝njou and Meta Objects Studio that speculate on the visual futures seen in immersive form, and works by Paul Shepherd and Inhwa Yeom that immerses the audience in two techno-culture worlds reflecting our own cultural idiosyncracies. By amplifying the voices and imaginations of its people, the exhibition fosters a collective dialogue about the preservation and transformation of Hong Kong鈥檚 heritage in an ever-evolving world.</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleMenu(button) {
+            const menu = button.closest('.hamburger-menu');
+            const dropdown = menu.querySelector('.menu-dropdown');
+            const isOpen = dropdown.classList.toggle('show');
+            button.classList.toggle('active', isOpen);
+        }
+
+        document.addEventListener('click', function(event) {
+            document.querySelectorAll('.hamburger-menu').forEach(function(menu) {
+                if (!menu.contains(event.target)) {
+                    const dropdown = menu.querySelector('.menu-dropdown');
+                    const button = menu.querySelector('.hamburger-btn');
+                    dropdown.classList.remove('show');
+                    button.classList.remove('active');
+                }
+            });
+        });
+
+        document.querySelectorAll('.hamburger-menu').forEach(function(menu) {
+            menu.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        });
+    </script>
+    <script>
+        const particleColors = [0xff6b6b, 0xff2e8f, 0xff9021, 0x94ed5c, 0xfeca57, 0xff9ff3, 0xbaeaa9];
+        let scene, camera, renderer;
+        let particles;
+
+        function initParticles() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+            document.getElementById('particle-container').appendChild(renderer.domElement);
+
+            addParticles();
+
+            animateParticles();
+
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function addParticles() {
+            const particleCount = 500;
+            const particleGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+
+                const color = new THREE.Color(particleColors[Math.floor(Math.random() * particleColors.length)]);
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+            }
+
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 0.1,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.7
+            });
+
+            particles = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particles);
+        }
+
+        function animateParticles() {
+            requestAnimationFrame(animateParticles);
+            if (particles) {
+                particles.rotation.y += 0.0005;
+                particles.rotation.x += 0.0005;
+            }
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        initParticles();
+    </script>
+
+</body>
+</html>
+
+

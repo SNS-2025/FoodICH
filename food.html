@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food - What you see is what you eat</title>
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/libs/fflate.min.js"></script>
+     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #ea8366 0%, #a24b5b 100%);
+            font-family: 'Arial', sans-serif;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #particle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px 40px;
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .food-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 350px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .food-item:nth-child(2) {
+            animation-delay: 2s;
+        }
+
+        .food-item:nth-child(3) {
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+        
+        .food-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .food-image {
+            width: 100%;
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .model-view {
+            width: 100%;
+            height: 250px;
+            position: relative;
+        }
+         
+         .food-content {
+             padding: 25px;
+         }
+        
+        .food-content h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #feca57;
+        }
+        
+        /* 汉堡菜单样式 */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .hamburger-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+        
+        .hamburger-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+        
+        .hamburger-line {
+            width: 20px;
+            height: 2px;
+            background: white;
+            margin: 2px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .hamburger-btn.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .hamburger-btn.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger-btn.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+        
+        .menu-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 15px;
+            padding: 10px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 18px 40px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            min-width: 180px;
+        }
+        
+        .menu-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .menu-item {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 12px 16px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        .menu-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body>
+    <div id="particle-container"></div>
+    <!-- 汉堡菜单 -->
+    <div class="hamburger-menu">
+        <button class="hamburger-btn" onclick="toggleMenu()">
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+        </button>
+        <div class="menu-dropdown" id="menuDropdown">
+            <a href="index.html" class="menu-item">Home</a>
+            <a href="about.html" class="menu-item">About</a>
+            <a href="food.html" class="menu-item">Food</a>
+            <a href="exhibition.html" class="menu-item">Exhibition</a>
+            <a href="https://studio.example.com" class="menu-item" target="_blank">Studio</a>
+            <a href="https://instagram.com/futuretensehk" class="menu-item" target="_blank">Instagram</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <a href="claypot.html" class="food-item">
+            <div class="model-view" data-model="models/1煲仔饭.fbx"></div>
+             <div class="food-content">
+                 <h3>煲仔飯 Clay Pot Rice</h3>
+             </div>
+         </a>
+         
+         <a href="juicy-buns.html" class="food-item">
+            <div class="model-view" data-model="models/c肉包.fbx"></div>
+             <div class="food-content">
+                 <h3>流汁湯包 Juicy Buns</h3>
+             </div>
+         </a>
+         
+         <a href="hakka-tofu.html" class="food-item">
+            <div class="model-view" data-model="models/c花园豆腐.fbx"></div>
+             <div class="food-content">
+                 <h3>客家釀豆腐 Hakka Stuffed Tofu</h3>
+             </div>
+         </a>
+     </div>
+     
+    <script>
+        // 汉堡菜单功能
+        function toggleMenu() {
+            const hamburgerBtn = document.querySelector('.hamburger-btn');
+            const menuDropdown = document.getElementById('menuDropdown');
+            
+            hamburgerBtn.classList.toggle('active');
+            menuDropdown.classList.toggle('show');
+        }
+        
+        // 点击页面其他地方关闭菜单
+        document.addEventListener('click', function(event) {
+            const hamburgerMenu = document.querySelector('.hamburger-menu');
+            const menuDropdown = document.getElementById('menuDropdown');
+            const hamburgerBtn = document.querySelector('.hamburger-btn');
+            
+            if (!hamburgerMenu.contains(event.target)) {
+                menuDropdown.classList.remove('show');
+                hamburgerBtn.classList.remove('active');
+            }
+        });
+        
+        // 阻止菜单内部点击事件冒泡
+        document.querySelector('.hamburger-menu').addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+
+        // 初始化每个卡片内的3D模型
+        (function initCardViewers() {
+            const containers = document.querySelectorAll('.model-view');
+            
+            containers.forEach((container) => {
+                const modelPath = container.getAttribute('data-model');
+
+                const scene = new THREE.Scene();
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+                camera.position.set(0, 0, 5);
+
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(width, height);
+                renderer.setPixelRatio(window.devicePixelRatio || 1);
+                renderer.shadowMap.enabled = true;
+                container.appendChild(renderer.domElement);
+                // 确保点击仍然能触发外层链接
+                renderer.domElement.style.pointerEvents = 'none';
+
+                // 光源
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+                scene.add(ambientLight);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+                directionalLight.position.set(3, 5, 4);
+                directionalLight.castShadow = true;
+                scene.add(directionalLight);
+
+                // 视图对象
+                const viewer = { scene, camera, renderer, model: null, container };
+
+                // 加载FBX
+                const loader = new THREE.FBXLoader();
+                loader.load(modelPath, function(object) {
+                    object.scale.setScalar(0.025);
+                    object.rotation.x = Math.PI * 40 / 180;
+                    object.traverse(function(child) {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                            if (child.material) {
+                                const mats = Array.isArray(child.material) ? child.material : [child.material];
+                                mats.forEach(mat => {
+                                    if (mat.map) { mat.map.flipY = true; mat.map.needsUpdate = true; }
+                                    if (mat.normalMap) { mat.normalMap.flipY = true; mat.normalMap.needsUpdate = true; }
+                                    if (mat.roughnessMap) { mat.roughnessMap.flipY = true; mat.roughnessMap.needsUpdate = true; }
+                                    mat.needsUpdate = true;
+                                });
+                            }
+                        }
+                    });
+                    scene.add(object);
+                    viewer.model = object;
+                }, undefined, function(error) {
+                    console.error('FBX加载失败: ', modelPath, error);
+                });
+
+                // 动画循环
+                function animate() {
+                    requestAnimationFrame(animate);
+                    if (viewer.model) {
+                        viewer.model.rotation.y += 0.01;
+                    }
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+                // 响应式
+                function onResize() {
+                    const w = container.clientWidth;
+                    const h = container.clientHeight;
+                    camera.aspect = w / h;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(w, h);
+                }
+                window.addEventListener('resize', onResize);
+            });
+        })();
+    </script>
+    <script>
+        const particleColors = [0xff6b6b, 0xff2e8f, 0xff9021, 0x94ed5c, 0xfeca57, 0xff9ff3, 0xbaeaa9];
+        let scene, camera, renderer;
+        let particles;
+
+        function initParticles() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+            document.getElementById('particle-container').appendChild(renderer.domElement);
+
+            addParticles();
+
+            animateParticles();
+
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function addParticles() {
+            const particleCount = 500;
+            const particleGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+
+                const color = new THREE.Color(particleColors[Math.floor(Math.random() * particleColors.length)]);
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+            }
+
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 0.1,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.7
+            });
+
+            particles = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particles);
+        }
+
+        function animateParticles() {
+            requestAnimationFrame(animateParticles);
+            if (particles) {
+                particles.rotation.y += 0.0005;
+                particles.rotation.x += 0.0005;
+            }
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        initParticles();
+    </script>
+</body>
+</html>
