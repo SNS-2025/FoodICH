@@ -34,10 +34,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function populatePage(dish) {
     // 填充标题卡片
-    setEl('titleCardNumber', dish.number);
     setEl('titleCardZh', dish.title);
     setEl('titleCardEn', dish.subtitle);
-    setEl('titleCardLocation', dish.location);
 
     // 填充描述
     const titleDesc = document.getElementById('titleDesc');
@@ -94,28 +92,96 @@ function initRealityGrid(items) {
 
         if (item.type === 'video') {
             return `
-                <div class="masonry-item ${sizeClass}" data-lightbox-src="${item.src}">
+                <div class="masonry-item ${sizeClass}"
+                     data-src="${item.src}"
+                     data-alt="${item.alt}"
+                     data-type="video"
+                     onclick="openRealityExplanation(this)">
                     <video src="${item.src}" alt="${item.alt}" muted loop playsinline
                            onmouseenter="this.play()" onmouseleave="this.pause();this.currentTime=0;"></video>
                 </div>
             `;
         } else {
             return `
-                <div class="masonry-item ${sizeClass}" data-lightbox-src="${item.src}">
+                <div class="masonry-item ${sizeClass}"
+                     data-src="${item.src}"
+                     data-alt="${item.alt}"
+                     data-type="image"
+                     onclick="openRealityExplanation(this)">
                     <img src="${item.src}" alt="${item.alt}" loading="lazy">
                 </div>
             `;
         }
     }).join('');
+}
 
-    // 点击打开lightbox
-    Array.from(grid.querySelectorAll('.masonry-item')).forEach(item => {
-        item.addEventListener('click', function() {
-            const src = this.dataset.lightboxSrc;
-            const alt = this.querySelector('img, video')?.alt || '';
-            openLightbox(src, alt);
-        });
+// ===========================
+// 实拍素材解释浮层
+// ===========================
+
+function openRealityExplanation(element) {
+    // 复用AI解释的浮层结构
+    const overlay = document.getElementById('aiExplanationOverlay');
+    const img = document.getElementById('aiExplanationImg');
+    const title = document.getElementById('aiExplanationTitle');
+    const desc = document.getElementById('aiExplanationDesc');
+
+    if (!overlay || !title || !desc) return;
+
+    // 隐藏图片（CSS已经隐藏了，这里确保不显示）
+    if (img) img.style.display = 'none';
+
+    const alt = element.dataset.alt || '';
+    const type = element.dataset.type || 'image';
+
+    title.textContent = alt;
+    desc.textContent = getRealityExplanation(alt, type);
+
+    // 获取点击图片的位置
+    const rect = element.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // 设置浮层位置
+    overlay.style.display = 'block';
+
+    // 等待一帧让浏览器计算浮层尺寸
+    requestAnimationFrame(() => {
+        const overlayRect = overlay.getBoundingClientRect();
+        let left, top;
+
+        // 水平居中
+        left = rect.left + rect.width / 2 - overlayRect.width / 2;
+
+        // 确保不超出屏幕左右边界
+        left = Math.max(20, Math.min(left, viewportWidth - overlayRect.width - 20));
+
+        // 垂直方向：优先显示在图片下方，空间不够则显示在上方
+        if (rect.bottom + overlayRect.height + 20 < viewportHeight) {
+            top = rect.bottom + 12;
+        } else if (rect.top - overlayRect.height - 20 > 0) {
+            top = rect.top - overlayRect.height - 12;
+        } else {
+            // 如果上下都不够，就居中显示
+            top = (viewportHeight - overlayRect.height) / 2;
+        }
+
+        overlay.style.left = left + 'px';
+        overlay.style.top = top + 'px';
+        overlay.classList.add('active');
     });
+}
+
+function getRealityExplanation(alt, type) {
+    const typeText = type === 'video' ? '实拍视频' : '实拍照片';
+
+    const explanations = {
+        '腊肠特写': '这是一张精心拍摄的腊肠特写照片，展现了传统腊肠独特的质感和诱人的油润光泽。通过专业摄影技术，真实记录了腊肠的纹理和色彩细节。',
+        '煲仔饭': '实拍煲仔饭成品，展示了传统烹饪工艺的精髓。米饭颗粒分明，腊肠切片均匀，整体呈现出诱人的色泽和香气。',
+        '制作过程': '记录了传统美食制作的真实过程，捕捉了烹饪中的关键步骤。火候的掌控、食材的搭配都在镜头下一览无余。',
+    };
+
+    return explanations[alt] || `这是一张${typeText}，真实记录了传统美食的制作过程或成品。通过镜头，我们捕捉了食物最真实的质感、色彩和细节，展现了传统烹饪文化的魅力。`;
 }
 
 // ===========================
@@ -158,10 +224,11 @@ function openAIExplanation(element) {
     const title = document.getElementById('aiExplanationTitle');
     const desc = document.getElementById('aiExplanationDesc');
 
-    if (!overlay || !img || !title || !desc) return;
+    if (!overlay || !title || !desc) return;
 
-    img.src = element.dataset.src || '';
-    img.alt = element.dataset.alt || '';
+    // 隐藏图片元素
+    if (img) img.style.display = 'none';
+
     title.textContent = element.dataset.alt || 'AI Generated Image';
     desc.textContent = getAIExplanation(element.dataset.alt);
 
@@ -202,11 +269,14 @@ function openAIExplanation(element) {
 
 function closeAIExplanation() {
     const overlay = document.getElementById('aiExplanationOverlay');
+    const img = document.getElementById('aiExplanationImg');
     if (overlay) {
         overlay.classList.remove('active');
         // 等待动画完成后隐藏
         setTimeout(() => {
             overlay.style.display = 'none';
+            // 重置图片显示状态
+            if (img) img.style.display = '';
         }, 300);
     }
 }

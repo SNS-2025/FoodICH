@@ -58,10 +58,11 @@
         </div>
 
         <div class="title-card">
-            <div class="title-number" id="titleCardNumber"></div>
-            <h1 class="title-zh" id="titleCardZh"></h1>
-            <div class="title-en" id="titleCardEn"></div>
-            <div class="title-location" id="titleCardLocation"></div>
+            <div class="title-main">
+                <h1 class="title-zh" id="titleCardZh"></h1>
+                <span class="title-separator">·</span>
+                <div class="title-en" id="titleCardEn"></div>
+            </div>
             <div class="title-desc" id="titleDesc"></div>
         </div>
     </main>
@@ -75,11 +76,11 @@
         <div class="masonry-grid" id="aiGrid"></div>
     </aside>
 
-    <!-- AI图片解释浮层 -->
+    <!-- 统一的图片解释浮层 -->
     <div class="ai-explanation-overlay" id="aiExplanationOverlay" style="display: none;">
         <button class="ai-explanation-close" onclick="closeAIExplanation()">×</button>
         <div class="ai-explanation-content">
-            <img id="aiExplanationImg" src="" alt="">
+            <img id="aiExplanationImg" src="" alt="" style="display: none;">
             <div class="ai-explanation-text">
                 <h3 id="aiExplanationTitle"></h3>
                 <p id="aiExplanationDesc"></p>

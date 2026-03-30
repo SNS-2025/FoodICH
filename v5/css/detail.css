@@ -67,6 +67,8 @@ body.detail-page {
     overflow-y: auto;
     z-index: 10;
     scroll-behavior: smooth;
+    /* 从中间向左发散的透视效果 */
+    perspective: 1200px;
 }
 
 /* 中间3D+标题舞台 */
@@ -95,6 +97,8 @@ body.detail-page {
     overflow-y: auto;
     z-index: 10;
     scroll-behavior: smooth;
+    /* 从中间向右发散的透视效果 */
+    perspective: 1200px;
 }
 
 /* 列标题 */
@@ -144,11 +148,23 @@ body.detail-page {
 
 .masonry-item {
     position: relative;
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     background: rgba(255,255,255,0.02);
+    /* 动态发散效果 */
+    transform-style: preserve-3d;
+}
+
+/* 左侧栏图片：从右向左发散 */
+.reality-column .masonry-item {
+    transform-origin: right center;
+}
+
+/* 右侧栏图片：从左向右发散 */
+.ai-column .masonry-item {
+    transform-origin: left center;
 }
 
 .masonry-item::before {
@@ -164,9 +180,16 @@ body.detail-page {
     pointer-events: none;
 }
 
-.masonry-item:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+/* 左侧栏hover：向左发散并旋转 */
+.reality-column .masonry-item:hover {
+    transform: translateX(-12px) translateY(-8px) scale(1.05) rotateY(-5deg);
+    box-shadow: 20px 15px 50px rgba(0,0,0,0.5);
+}
+
+/* 右侧栏hover：向右发散并旋转 */
+.ai-column .masonry-item:hover {
+    transform: translateX(12px) translateY(-8px) scale(1.05) rotateY(5deg);
+    box-shadow: -20px 15px 50px rgba(0,0,0,0.5);
 }
 
 .masonry-item:hover::before {
@@ -179,6 +202,8 @@ body.detail-page {
     height: 100%;
     object-fit: cover;
     display: block;
+    /* 统一方形边界 */
+    aspect-ratio: 1 / 1;
 }
 
 .masonry-item.tall {
@@ -257,66 +282,54 @@ body.detail-page {
    =========================== */
 
 .title-card {
-    width: 320px;
-    padding: 24px 28px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px;
+    width: 380px;
+    padding: 18px 24px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
     backdrop-filter: blur(40px);
     box-shadow: 0 20px 60px rgba(0,0,0,0.4);
     pointer-events: auto;
 }
 
-.title-number {
-    font-family: 'Sora', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.25em;
-    color: rgba(255,255,255,0.4);
-    margin-bottom: 16px;
+.title-main {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .title-zh {
-    margin: 0 0 6px;
+    margin: 0;
     font-family: 'Sora', sans-serif;
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     font-weight: 600;
     line-height: 1.2;
     color: #fff;
     letter-spacing: -0.02em;
 }
 
-.title-en {
-    font-family: 'Libre Baskerville', serif;
+.title-separator {
+    color: rgba(255,255,255,0.3);
     font-size: 1rem;
-    font-style: italic;
-    color: rgba(255,255,255,0.7);
-    margin-bottom: 12px;
+    margin: 0 2px;
 }
 
-.title-location {
-    display: inline-block;
-    padding: 6px 16px;
-    background: rgba(255,107,107,0.15);
-    border: 1px solid rgba(255,107,107,0.3);
-    border-radius: 20px;
-    font-family: 'Sora', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: rgba(255,107,107,0.9);
-    margin-bottom: 24px;
+.title-en {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: rgba(255,255,255,0.55);
 }
 
 .title-desc {
     font-family: 'Sora', sans-serif;
-    font-size: 0.82rem;
-    line-height: 1.7;
-    color: rgba(255,255,255,0.65);
-    padding-top: 16px;
-    border-top: 1px solid rgba(255,255,255,0.08);
-    max-height: 180px;
+    font-size: 0.7rem;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.5);
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    max-height: 120px;
     overflow-y: auto;
 }
 
@@ -403,23 +416,20 @@ body.detail-page {
     display: flex;
     flex-direction: column;
     width: 100%;
+    padding: 24px 28px;
 }
 
 .ai-explanation-content img {
-    width: 100%;
-    height: auto;
-    max-height: 320px;
-    object-fit: cover;
-    border-radius: 20px 20px 0 0;
+    display: none;
 }
 
 .ai-explanation-text {
-    padding: 20px 24px 24px;
+    padding: 0;
 }
 
 .ai-explanation-text h3 {
     font-family: 'Sora', sans-serif;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #fff;
     margin: 0 0 12px;
@@ -428,9 +438,9 @@ body.detail-page {
 
 .ai-explanation-text p {
     font-family: 'Sora', sans-serif;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     line-height: 1.7;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255,255,255,0.65);
     margin: 0;
 }
 
