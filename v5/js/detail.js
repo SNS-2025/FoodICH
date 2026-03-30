@@ -80,15 +80,30 @@ function initRealityGrid(items) {
     if (!grid) return;
 
     if (items.length === 0) {
-        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(255,255,255,0.3);font-family:\'Sora\',sans-serif;font-size:0.85rem;">暂无实拍素材</div>';
+        grid.innerHTML = '<div class="empty-state">暂无实拍素材</div>';
         return;
     }
 
     grid.innerHTML = items.map((item, index) => {
-        // 自动分配尺寸：第一个tall，每5个一个wide
+        // 改进的尺寸分配策略 - 更有设计感
         let sizeClass = '';
-        if (index === 0) sizeClass = 'tall';
-        else if ((index + 1) % 5 === 0) sizeClass = 'wide';
+        const itemCount = items.length;
+
+        // 根据数量动态调整布局策略
+        if (itemCount <= 3) {
+            // 少量图片：第一张large，其他normal
+            if (index === 0) sizeClass = 'large';
+        } else if (itemCount <= 6) {
+            // 中等数量：第一张tall，第三张wide
+            if (index === 0) sizeClass = 'tall';
+            else if (index === 2) sizeClass = 'wide';
+        } else {
+            // 较多数量：使用pattern增加变化
+            // Pattern: tall, normal, normal, wide, normal, tall, ...
+            const pattern = index % 6;
+            if (pattern === 0) sizeClass = 'tall';
+            else if (pattern === 3) sizeClass = 'wide';
+        }
 
         if (item.type === 'video') {
             return `
@@ -193,15 +208,28 @@ function initAIGrid(items) {
     if (!grid) return;
 
     if (items.length === 0) {
-        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(255,255,255,0.3);font-family:\'Sora\',sans-serif;font-size:0.85rem;">暂无AI生成图像</div>';
+        grid.innerHTML = '<div class="empty-state">暂无AI生成图像</div>';
         return;
     }
 
     grid.innerHTML = items.map((item, index) => {
-        // 自动分配尺寸
+        // 改进的尺寸分配 - 与左侧对称但有变化
         let sizeClass = '';
-        if (index === 0 || index === 3) sizeClass = 'tall';
-        else if ((index + 2) % 6 === 0) sizeClass = 'wide';
+        const itemCount = items.length;
+
+        if (itemCount <= 3) {
+            // 少量图片：第二张large，其他normal
+            if (index === 1) sizeClass = 'large';
+        } else if (itemCount <= 6) {
+            // 中等数量：第二张tall，第五张wide
+            if (index === 1) sizeClass = 'tall';
+            else if (index === 4) sizeClass = 'wide';
+        } else {
+            // 较多数量：使用pattern（与左侧错开）
+            const pattern = index % 6;
+            if (pattern === 2) sizeClass = 'tall';
+            else if (pattern === 5) sizeClass = 'wide';
+        }
 
         return `
             <div class="masonry-item ai-item ${sizeClass}"

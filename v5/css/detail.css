@@ -52,7 +52,7 @@ body.detail-page {
 }
 
 /* ===========================
-   三栏布局主体
+   三栏布局主体 - 改进版
    =========================== */
 
 /* 左侧实拍栏 */
@@ -60,8 +60,9 @@ body.detail-page {
     position: fixed;
     left: 0;
     top: 0;
-    width: 22vw;
-    min-width: 280px;
+    width: calc((100vw - 420px) / 2);
+    min-width: 260px;
+    max-width: 400px;
     height: 100vh;
     padding: 100px 20px 40px 24px;
     overflow-y: auto;
@@ -71,7 +72,7 @@ body.detail-page {
     perspective: 1200px;
 }
 
-/* 中间3D+标题舞台 */
+/* 中间3D+标题舞台 - 完美居中 */
 .center-stage {
     position: fixed;
     left: 50%;
@@ -83,6 +84,9 @@ body.detail-page {
     justify-content: center;
     z-index: 5;
     pointer-events: none;
+    /* 确保不受左右栏影响 */
+    width: 420px;
+    margin: 0 auto;
 }
 
 /* 右侧AI栏 */
@@ -90,8 +94,9 @@ body.detail-page {
     position: fixed;
     right: 0;
     top: 0;
-    width: 22vw;
-    min-width: 280px;
+    width: calc((100vw - 420px) / 2);
+    min-width: 260px;
+    max-width: 400px;
     height: 100vh;
     padding: 100px 24px 40px 20px;
     overflow-y: auto;
@@ -130,7 +135,8 @@ body.detail-page {
 }
 
 /* ===========================
-   瀑布流网格（左右侧）
+   瀑布流网格（左右侧）- 改进版
+   更有设计感和弹性
    =========================== */
 
 .masonry-grid {
@@ -138,6 +144,9 @@ body.detail-page {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     padding-bottom: 60px;
+    /* 添加弹性布局增强 */
+    grid-auto-rows: minmax(120px, auto);
+    grid-auto-flow: dense;
 }
 
 .masonry-grid::after {
@@ -155,6 +164,21 @@ body.detail-page {
     background: rgba(255,255,255,0.02);
     /* 动态发散效果 */
     transform-style: preserve-3d;
+    /* 统一设置高度比例 */
+    aspect-ratio: 1 / 1;
+}
+
+/* 空状态占位符 - 保持网格平衡 */
+.masonry-grid .empty-state {
+    grid-column: 1 / -1;
+    aspect-ratio: auto;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 16px;
 }
 
 /* 左侧栏图片：从右向左发散 */
@@ -202,21 +226,60 @@ body.detail-page {
     height: 100%;
     object-fit: cover;
     display: block;
-    /* 统一方形边界 */
-    aspect-ratio: 1 / 1;
 }
 
+/* 改进的尺寸变化 - 更有设计感 */
 .masonry-item.tall {
     grid-row: span 2;
+    /* Tall items have taller aspect ratio */
+    aspect-ratio: 1 / 2;
 }
 
 .masonry-item.wide {
     grid-column: span 2;
+    /* Wide items have wider aspect ratio */
+    aspect-ratio: 2 / 1;
+}
+
+/* 额外的尺寸变化 - 增加视觉多样性 */
+.masonry-item.large {
+    grid-column: span 2;
+    grid-row: span 2;
+    aspect-ratio: 1 / 1;
 }
 
 /* AI图片特殊样式 */
 .masonry-item.ai-item {
     position: relative;
+}
+
+/* 改进的空状态样式 */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255,255,255,0.3);
+    font-family: 'Sora', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+}
+
+/* 增强视觉效果 - 为网格添加subtle gradient overlay */
+.masonry-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.masonry-item:hover::after {
+    opacity: 1;
 }
 
 /* ===========================
@@ -507,13 +570,13 @@ body.detail-page {
 @media (max-width: 1200px) {
     .reality-column,
     .ai-column {
-        width: 20vw;
-        min-width: 240px;
+        width: calc((100vw - 380px) / 2);
+        min-width: 220px;
+        max-width: 350px;
     }
 
     .center-stage {
-        margin-left: 20vw;
-        margin-right: 20vw;
+        width: 380px;
     }
 }
 
@@ -529,8 +592,14 @@ body.detail-page {
     }
 
     .center-stage {
-        margin: 0;
+        position: relative;
+        left: 0;
+        top: 0;
+        transform: none;
+        margin: 0 auto;
         padding: 100px 24px 40px;
+        width: 100%;
+        max-width: 420px;
     }
 
     .column-header {
@@ -542,6 +611,7 @@ body.detail-page {
 
     .model-container {
         max-width: 350px;
+        width: 100%;
     }
 
     .ai-explanation-content {
@@ -565,15 +635,26 @@ body.detail-page {
     .masonry-grid {
         grid-template-columns: 1fr;
         gap: 10px;
+        grid-auto-rows: minmax(140px, auto);
     }
 
     .masonry-item.tall,
-    .masonry-item.wide {
+    .masonry-item.wide,
+    .masonry-item.large {
         grid-column: span 1;
         grid-row: span 1;
+        aspect-ratio: 1 / 1;
     }
 
     .title-card {
         padding: 24px 28px;
+        width: 100%;
+        max-width: 380px;
+    }
+
+    .center-stage {
+        width: 100%;
+        padding-left: 16px;
+        padding-right: 16px;
     }
 }
