@@ -1,7 +1,7 @@
 /* ========================
    FOOD DETAIL PAGE - v5 弧形环幕布局
    三栏布局：左侧实拍 | 中间3D+标题 | 右侧AI
-   弧形流动效果，中间遮罩窗口
+   弧形水平流动 + 透视纵深效果
    ======================== */
 
 body.detail-page {
@@ -63,8 +63,8 @@ body.detail-page {
     justify-content: space-between;
     z-index: 10;
     overflow: hidden;
-    /* 弧形透视 */
-    perspective: 1500px;
+    /* 弧形透视 - 关键! */
+    perspective: 2000px;
     perspective-origin: 50% 50%;
 }
 
@@ -78,10 +78,12 @@ body.detail-page {
     min-width: 300px;
     height: 100vh;
     z-index: 10;
-    overflow: hidden;
-    /* 左侧栏标签 */
+    overflow: visible;
     display: flex;
     flex-direction: column;
+    /* 左侧透视原点 */
+    perspective: 1200px;
+    perspective-origin: right center;
 }
 
 /* 列标题 */
@@ -111,32 +113,28 @@ body.detail-page {
     color: rgba(255,255,255,0.8);
 }
 
-/* 弧形轨道 */
+/* 弧形轨道 - 水平流动 */
 .arc-track {
     position: absolute;
     inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 140px 0 60px;
-    /* 弧形轨迹 */
+    /* 3D空间 */
     transform-style: preserve-3d;
-    perspective: 1000px;
+    pointer-events: none;
 }
 
-/* 流动项 */
+/* 流动项 - 绝对定位,通过JS控制位置 */
 .arc-item {
     position: absolute;
     width: 220px;
     height: 220px;
-    flex-shrink: 0;
     border-radius: 16px;
     overflow: hidden;
     cursor: pointer;
     background: rgba(255,255,255,0.02);
-    transition: transform 0.05s linear, opacity 0.05s linear;
     box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     will-change: transform, opacity;
+    pointer-events: auto;
+    transition: box-shadow 0.3s ease;
 }
 
 .arc-item img,
@@ -164,16 +162,6 @@ body.detail-page {
     opacity: 1;
 }
 
-/* 左侧特殊样式 */
-.reality-column .arc-track {
-    align-items: flex-start;
-    padding-left: 24px;
-}
-
-.reality-column .arc-item {
-    transform-origin: right center;
-}
-
 /* ===========================
    中间核心区 - 弧形遮罩窗口
    =========================== */
@@ -186,12 +174,11 @@ body.detail-page {
     align-items: center;
     justify-content: center;
     z-index: 20;
-    /* 弧形遮罩 - 创建中间清晰边缘淡化的效果 */
     pointer-events: none;
-    /* 添加微妙的发光边框效果 */
+    /* 中间区域的遮罩效果 */
     background: radial-gradient(
-        ellipse 80% 60% at 50% 50%,
-        rgba(255,107,107,0.05) 0%,
+        ellipse 100% 80% at 50% 50%,
+        rgba(255,107,107,0.03) 0%,
         transparent 70%
     );
 }
@@ -202,8 +189,7 @@ body.detail-page {
     align-items: center;
     justify-content: center;
     pointer-events: auto;
-    /* 遮罩效果：中心清晰，边缘淡化 */
-    filter: drop-shadow(0 0 80px rgba(255,107,107,0.25));
+    filter: drop-shadow(0 0 100px rgba(255,107,107,0.3));
 }
 
 /* ===========================
@@ -216,24 +202,18 @@ body.detail-page {
     min-width: 300px;
     height: 100vh;
     z-index: 10;
-    overflow: hidden;
+    overflow: visible;
     display: flex;
     flex-direction: column;
+    /* 右侧透视原点 */
+    perspective: 1200px;
+    perspective-origin: left center;
 }
 
 .ai-column .column-header {
     left: auto;
     right: 24px;
     text-align: right;
-}
-
-.ai-column .arc-track {
-    align-items: flex-end;
-    padding-right: 24px;
-}
-
-.ai-column .arc-item {
-    transform-origin: left center;
 }
 
 /* ===========================
@@ -499,7 +479,6 @@ body.detail-page {
     .arc-track {
         position: relative;
         padding: 20px 0 40px;
-        align-items: center !important;
     }
 
     .center-stage {
@@ -516,11 +495,6 @@ body.detail-page {
         right: 0 !important;
         text-align: left !important;
         padding: 20px 8px 20px;
-    }
-
-    .ai-explanation-content {
-        grid-template-columns: 1fr;
-        gap: 24px;
     }
 }
 

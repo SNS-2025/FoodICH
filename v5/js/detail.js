@@ -1,6 +1,6 @@
 // ===========================
 // FOOD DETAIL PAGE - v5 弧形环幕布局
-// 左右独立循环动画 + 中间遮罩窗口
+// 左右水平流动 + 弧形透视 + 纵深效果
 // ===========================
 
 function getDishIdFromURL() {
@@ -86,11 +86,11 @@ function initArcTracks(realityItems, aiItems) {
 
     if (!leftTrack || !rightTrack) return;
 
-    // 创建左侧流动项（从左外进入，向中间移动，消失后重新开始）
+    // 创建左侧流动项
     const leftElements = createArcItems(realityItems, 'reality');
     leftTrack.innerHTML = leftElements;
 
-    // 创建右侧流动项（从中间滑出，向右外移动，消失后重新开始）
+    // 创建右侧流动项
     const rightElements = createArcItems(aiItems, 'ai');
     rightTrack.innerHTML = rightElements;
 
@@ -126,149 +126,141 @@ function createArcItems(items, category) {
 }
 
 // ===========================
-// 弧形流动动画
+// 弧形流动动画 - 水平方向
 // ===========================
 
 function startArcAnimation(leftTrack, rightTrack, realityItems, aiItems) {
     if (animationState.isRunning) return;
     animationState.isRunning = true;
 
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const centerWidth = 500;
+    const sideWidth = (viewportWidth - centerWidth) / 2;
+
     // 动画参数
     const config = {
-        itemHeight: 220,      // 每个项的高度
-        gap: 30,              // 项之间的间距
-        speed: 0.8,           // 移动速度 (px/frame)
-        viewportHeight: window.innerHeight,
-        centerZoneStart: 0.35,  // 中间区域开始位置 (相对视口比例)
-        centerZoneEnd: 0.65,    // 中间区域结束位置
-        decelerationZone: 0.1   // 中间区域减速范围
+        viewportWidth,
+        viewportHeight,
+        centerWidth,
+        sideWidth,
+        itemWidth: 220,
+        itemHeight: 220,
+        itemGap: 40,            // 垂直间距
+        speed: 1.2,             // 水平移动速度
+        centerX: viewportWidth / 2,
+        centerY: viewportHeight / 2,
+        arcRadius: 800,         // 弧形半径
+        centerZoneWidth: centerWidth * 1.5,  // 中间清晰区域宽度
     };
 
+    // 左侧项目初始化
     const leftItems = leftTrack.querySelectorAll('.arc-item');
+    const leftPositions = [];
+    leftItems.forEach((item, index) => {
+        // 垂直分布
+        const y = 100 + index * (config.itemHeight + config.itemGap);
+        // 从屏幕左外侧开始
+        const x = -config.itemWidth - 100;
+        leftPositions.push({ x, y, index });
+    });
+
+    // 右侧项目初始化
     const rightItems = rightTrack.querySelectorAll('.arc-item');
+    const rightPositions = [];
+    rightItems.forEach((item, index) => {
+        // 垂直分布
+        const y = 100 + index * (config.itemHeight + config.itemGap);
+        // 从中间开始
+        const x = config.centerX + centerWidth / 2;
+        rightPositions.push({ x, y, index });
+    });
 
-    // 初始化左侧轨道（从左外滑入）
-    let leftOffset = -config.viewportHeight; // 从屏幕上方外侧开始
-
-    // 初始化右侧轨道（从中间开始）
-    let rightOffset = 0; // 从中间开始
-
+    // 动画循环
+    let animId;
     function animate() {
         if (!animationState.isRunning) return;
 
-        // 左侧：从上往下（左外→中间→下外→循环）
-        leftOffset += config.speed;
-        const leftTotalHeight = realityItems.length * (config.itemHeight + config.gap);
-        if (leftOffset > config.viewportHeight + leftTotalHeight) {
-            leftOffset = -leftTotalHeight;
-        }
-        updateLeftTrack(leftItems, leftOffset, config);
+        // 更新左侧项目位置（从左外→中间→消失）
+        leftPositions.forEach((pos, idx) => {
+            pos.x += config.speed;
 
-        // 右侧：从中间往下（中间→右外→循环）
-        rightOffset += config.speed;
-        const rightTotalHeight = aiItems.length * (config.itemHeight + config.gap);
-        if (rightOffset > config.viewportHeight + rightTotalHeight) {
-            rightOffset = -rightTotalHeight;
-        }
-        updateRightTrack(rightItems, rightOffset, config);
+            // 到达中间后消失,重新从左侧开始
+            if (pos.x > config.centerX) {
+                pos.x = -config.itemWidth - 100;
+            }
 
-        requestAnimationFrame(animate);
+            updateItemPosition(leftItems[idx], pos.x, pos.y, config, 'left');
+        });
+
+        // 更新右侧项目位置（从中间→右外→消失）
+        rightPositions.forEach((pos, idx) => {
+            pos.x += config.speed;
+
+            // 到达右外侧后消失,重新从中间开始
+            if (pos.x > viewportWidth + config.itemWidth) {
+                pos.x = config.centerX + centerWidth / 2;
+            }
+
+            updateItemPosition(rightItems[idx], pos.x, pos.y, config, 'right');
+        });
+
+        animId = requestAnimationFrame(animate);
     }
 
-    // 启动动画循环
     animate();
 
-    // 保存动画状态
-    animationState.leftTrack = { track: leftTrack, items: leftItems, config };
-    animationState.rightTrack = { track: rightTrack, items: rightItems, config };
+    // 保存状态
+    animationState.leftTrack = { track: leftTrack, items: leftItems, positions: leftPositions, config };
+    animationState.rightTrack = { track: rightTrack, items: rightItems, positions: rightPositions, config };
 }
 
-function updateLeftTrack(items, offset, config) {
-    items.forEach((item, index) => {
-        const baseY = offset + index * (config.itemHeight + config.gap);
-        const centerY = baseY + config.itemHeight / 2;
+function updateItemPosition(item, x, y, config, side) {
+    if (!item) return;
 
-        // 计算在视口中的位置 (0-1)
-        const normalizedY = centerY / config.viewportHeight;
+    // 计算距离中心的位置 (0-1, 中心为0)
+    const distanceFromCenter = Math.abs(x - config.centerX) / (config.sideWidth + config.itemWidth);
 
-        // 中间区域清晰，边缘淡化
-        const inCenter = normalizedY >= config.centerZoneStart && normalizedY <= config.centerZoneEnd;
+    // 中间区域判断
+    const inCenter = Math.abs(x - config.centerX) < config.centerZoneWidth / 2;
 
-        // 透明度：中间区域为1，边缘渐变到0.4
-        let opacity = 1;
-        if (!inCenter) {
-            const distanceFromCenter = normalizedY < config.centerZoneStart
-                ? config.centerZoneStart - normalizedY
-                : normalizedY - config.centerZoneEnd;
-            opacity = Math.max(0.4, 1 - distanceFromCenter * 1.5);
-        }
+    // 透明度: 中间清晰,边缘淡化
+    let opacity = 1;
+    if (!inCenter) {
+        opacity = Math.max(0.15, 1 - distanceFromCenter * 1.5);
+    }
 
-        // 弧形效果：轻微旋转、缩放和透视
-        const rotationAngle = (normalizedY - 0.5) * 20; // -10° 到 10°
-        const scale = inCenter ? 1 : Math.max(0.75, 0.85 + (1 - Math.abs(normalizedY - 0.5) * 2) * 0.15);
-        const translateZ = inCenter ? 50 : 0;
+    // 缩放: 中间大,边缘小
+    const scale = inCenter ? 1 : Math.max(0.6, 1 - distanceFromCenter * 0.8);
 
-        // 应用变换
-        item.style.transform = `
-            translateY(${baseY}px)
-            translateZ(${translateZ}px)
-            rotateX(${rotationAngle}deg)
-            scale(${scale})
-        `;
-        item.style.opacity = opacity;
+    // 弧形轨迹: Y轴旋转营造弧形感
+    const arcProgress = (x - (side === 'left' ? -config.itemWidth : config.viewportWidth + config.itemWidth)) /
+                        (config.viewportWidth + config.itemWidth * 2);
+    const rotateY = (arcProgress - 0.5) * 45 * (side === 'left' ? -1 : 1);
 
-        // 中间区域添加发光效果
-        if (inCenter) {
-            item.style.filter = 'drop-shadow(0 0 40px rgba(255,107,107,0.4)) brightness(1.1)';
-            item.style.zIndex = '10';
-        } else {
-            item.style.filter = 'brightness(0.9)';
-            item.style.zIndex = '1';
-        }
-    });
-}
+    // Z轴深度: 中间靠近观察者,两侧远离
+    const translateZ = inCenter ? 150 : -100 - distanceFromCenter * 200;
 
-function updateRightTrack(items, offset, config) {
-    items.forEach((item, index) => {
-        const baseY = offset + index * (config.itemHeight + config.gap);
-        const centerY = baseY + config.itemHeight / 2;
+    // X轴旋转: 增加纵深感
+    const rotateX = (y - config.centerY) / config.viewportHeight * -15;
 
-        // 计算在视口中的位置 (0-1)
-        const normalizedY = centerY / config.viewportHeight;
+    // 应用变换
+    item.style.transform = `
+        translate3d(${x}px, ${y}px, ${translateZ}px)
+        rotateY(${rotateY}deg)
+        rotateX(${rotateX}deg)
+        scale(${scale})
+    `;
+    item.style.opacity = opacity;
 
-        // 中间区域清晰，边缘淡化
-        const inCenter = normalizedY >= config.centerZoneStart && normalizedY <= config.centerZoneEnd;
-
-        // 透明度
-        let opacity = 1;
-        if (!inCenter) {
-            const distanceFromCenter = normalizedY < config.centerZoneStart
-                ? config.centerZoneStart - normalizedY
-                : normalizedY - config.centerZoneEnd;
-            opacity = Math.max(0.4, 1 - distanceFromCenter * 1.5);
-        }
-
-        // 弧形效果：反向旋转
-        const rotationAngle = (normalizedY - 0.5) * -20;
-        const scale = inCenter ? 1 : Math.max(0.75, 0.85 + (1 - Math.abs(normalizedY - 0.5) * 2) * 0.15);
-        const translateZ = inCenter ? 50 : 0;
-
-        item.style.transform = `
-            translateY(${baseY}px)
-            translateZ(${translateZ}px)
-            rotateX(${rotationAngle}deg)
-            scale(${scale})
-        `;
-        item.style.opacity = opacity;
-
-        if (inCenter) {
-            item.style.filter = 'drop-shadow(0 0 40px rgba(255,107,107,0.4)) brightness(1.1)';
-            item.style.zIndex = '10';
-        } else {
-            item.style.filter = 'brightness(0.9)';
-            item.style.zIndex = '1';
-        }
-    });
+    // 中间区域发光效果
+    if (inCenter) {
+        item.style.filter = 'drop-shadow(0 0 50px rgba(255,107,107,0.5)) brightness(1.15)';
+        item.style.zIndex = '10';
+    } else {
+        item.style.filter = `brightness(${Math.max(0.6, 1 - distanceFromCenter * 0.5)})`;
+        item.style.zIndex = '1';
+    }
 }
 
 // ===========================
@@ -595,11 +587,14 @@ window.addEventListener('resize', debounce(function() {
     if (typeof window.resizeParticleCanvas === 'function') {
         window.resizeParticleCanvas();
     }
-    // 更新动画配置中的视口高度
+
+    // 更新动画配置
     if (animationState.leftTrack) {
+        animationState.leftTrack.config.viewportWidth = window.innerWidth;
         animationState.leftTrack.config.viewportHeight = window.innerHeight;
     }
     if (animationState.rightTrack) {
+        animationState.rightTrack.config.viewportWidth = window.innerWidth;
         animationState.rightTrack.config.viewportHeight = window.innerHeight;
     }
 }, 300));
