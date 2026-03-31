@@ -40,53 +40,64 @@
         <div class="desktop-label" id="desktopLabel"></div>
     </div>
 
-    <!-- 左侧：实拍内容 -->
-    <aside class="reality-column" id="realityColumn">
-        <div class="column-header">
-            <span class="column-label">REALITY</span>
-            <span class="column-subtitle">实拍记录</span>
-        </div>
-        <div class="masonry-grid" id="realityGrid"></div>
-    </aside>
-
-    <!-- 中间：3D模型 + 标题 -->
-    <main class="center-stage">
-        <div class="model-container">
-            <div class="model-stage" id="winModelStage">
-                <div class="model-status" id="winModelStatus">Loading 3D model...</div>
+    <main class="detail-layout">
+        <section class="detail-header">
+            <div class="detail-header-number" id="titleCardNumber"></div>
+            <div class="detail-header-main">
+                <h1 class="detail-header-zh" id="titleCardZh"></h1>
+                <div class="detail-header-en" id="titleCardEn"></div>
             </div>
-        </div>
+            <div class="detail-header-location" id="titleCardLocation"></div>
+        </section>
 
-        <div class="title-card">
-            <div class="title-main">
-                <h1 class="title-zh" id="titleCardZh"></h1>
-                <span class="title-separator">·</span>
-                <div class="title-en" id="titleCardEn"></div>
-            </div>
-            <div class="title-desc" id="titleDesc"></div>
-        </div>
+        <section class="detail-grid">
+            <article class="detail-panel" id="win-video">
+                <div class="detail-panel-title" id="winVideoTitle">視頻</div>
+                <div class="detail-panel-body detail-panel-video">
+                    <video id="winVideo" controls muted loop playsinline preload="none">
+                        <source id="winVideoSrc" src="" type="video/mp4">
+                    </video>
+                </div>
+            </article>
+
+            <article class="detail-panel" id="win-model">
+                <div class="detail-panel-title">3D 模型</div>
+                <div class="detail-panel-body detail-panel-model">
+                    <div class="model-stage" id="winModelStage">
+                        <div class="model-status" id="winModelStatus">Loading 3D model...</div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="detail-panel" id="win-display">
+                <div class="detail-panel-title" id="winDisplayTitle">圖片展示</div>
+                <div class="detail-panel-body detail-panel-image detail-panel-display">
+                    <div class="detail-display-wall" id="winDisplayWall"></div>
+                </div>
+            </article>
+
+            <article class="detail-panel" id="win-gallery">
+                <div class="detail-panel-title" id="winGalleryTitle">圖頁</div>
+                <div class="detail-panel-body detail-panel-gallery">
+                    <div class="gallery-grid" id="winGalleryGrid"></div>
+                </div>
+            </article>
+
+            <article class="detail-panel" id="win-desc">
+                <div class="detail-panel-title">簡介</div>
+                <div class="detail-panel-body detail-panel-scroll">
+                    <div class="win-desc-content" id="winDescContent"></div>
+                </div>
+            </article>
+
+            <article class="detail-panel" id="win-info">
+                <div class="detail-panel-title">採訪碎片</div>
+                <div class="detail-panel-body detail-panel-scroll">
+                    <div class="fragment-list" id="winInfoCard"></div>
+                </div>
+            </article>
+        </section>
     </main>
-
-    <!-- 右侧：AI生成内容 -->
-    <aside class="ai-column" id="aiColumn">
-        <div class="column-header">
-            <span class="column-label">AI VISION</span>
-            <span class="column-subtitle">AI生成图像</span>
-        </div>
-        <div class="masonry-grid" id="aiGrid"></div>
-    </aside>
-
-    <!-- 统一的图片解释浮层 -->
-    <div class="ai-explanation-overlay" id="aiExplanationOverlay" style="display: none;">
-        <button class="ai-explanation-close" onclick="closeAIExplanation()">×</button>
-        <div class="ai-explanation-content">
-            <img id="aiExplanationImg" src="" alt="" style="display: none;">
-            <div class="ai-explanation-text">
-                <h3 id="aiExplanationTitle"></h3>
-                <p id="aiExplanationDesc"></p>
-            </div>
-        </div>
-    </div>
 
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>

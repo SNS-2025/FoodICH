@@ -1,6 +1,7 @@
 // ===========================
-// FOOD DETAIL PAGE - v5 现代艺术布局
-// 三栏布局：左侧实拍 | 中间3D+标题 | 右侧AI
+// FOOD DETAIL PAGE
+// 可拖动浮动窗口系统
+// Updated: 2026-03-05 v4.1
 // ===========================
 
 function getDishIdFromURL() {
@@ -28,22 +29,20 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
+    const desktopLabel = document.getElementById('desktopLabel');
+    if (desktopLabel) desktopLabel.textContent = dish.subtitle.toUpperCase();
+
     populatePage(dish);
+    initLightbox();
     initModelStage(dishId);
 });
 
 function populatePage(dish) {
-    // 填充标题卡片
+    setEl('titleCardNumber', dish.number);
     setEl('titleCardZh', dish.title);
     setEl('titleCardEn', dish.subtitle);
+    setEl('titleCardLocation', dish.location);
 
-    // 填充描述
-    const titleDesc = document.getElementById('titleDesc');
-    if (titleDesc) {
-        titleDesc.innerHTML = dish.description.map(p => `<p>${p}</p>`).join('');
-    }
-
-    // 分配内容到左右两栏
     const mediaItems = Array.isArray(dish.mediaItems) ? dish.mediaItems : [];
     const displayItems = Array.isArray(dish.displayItems) ? dish.displayItems : [];
     const galleryItems = Array.isArray(dish.galleryItems) ? dish.galleryItems : [];
@@ -51,19 +50,41 @@ function populatePage(dish) {
         ? dish.videoItems
         : mediaItems.filter(item => item.type === 'video');
 
-    // 左侧：实拍内容（displayItems + videoItems）
-    const realityItems = [
-        ...displayItems.map(item => ({ ...item, type: 'image', category: 'reality' })),
-        ...videoItems.map(item => ({ ...item, category: 'reality' }))
-    ];
+    const videoSrc = document.getElementById('winVideoSrc');
+    const videoEl = document.getElementById('winVideo');
+    if (videoItems.length > 0 && videoSrc && videoEl) {
+        videoSrc.src = '';
+        videoEl.preload = 'none';
+        videoEl.src = videoItems[0].src;
+        setEl('winVideoTitle', '視頻');
+    } else {
+        const winVideo = document.getElementById('win-video');
+        if (winVideo) winVideo.style.display = 'none';
+    }
 
-    // 右侧：AI生成内容（galleryItems）
-    const aiItems = galleryItems.map(item => ({ ...item, category: 'ai' }));
+    setEl('winDisplayTitle', '圖片展示');
+    setEl('winGalleryTitle', '圖集');
 
-    initRealityGrid(realityItems);
-    initAIGrid(aiItems);
+    const descContent = document.getElementById('winDescContent');
+    if (descContent) {
+        descContent.innerHTML = `
+            <h3>${dish.title} — ${dish.subtitle}</h3>
+            ${dish.description.map(p => `<p>${p}</p>`).join('')}
+        `;
+    }
 
-    initLightbox();
+    const galleryGrid = document.getElementById('winGalleryGrid');
+    if (galleryGrid) {
+        galleryGrid.innerHTML = '';
+    }
+
+    initDisplayWall(displayItems);
+    initRealityGallery(galleryItems);
+
+    const infoCard = document.getElementById('winInfoCard');
+    if (infoCard) {
+        infoCard.innerHTML = buildFragments(dish, displayItems, galleryItems, videoItems);
+    }
 }
 
 function setEl(id, text) {
@@ -71,259 +92,87 @@ function setEl(id, text) {
     if (el) el.textContent = text;
 }
 
-// ===========================
-// 左侧实拍内容网格
-// ===========================
+function buildFragments(dish, displayItems, galleryItems, videoItems) {
+    const fragments = [
+        { label: 'Dish', value: dish.title },
+        { label: 'Location', value: dish.location },
+        { label: 'Display', value: `${displayItems.length}` },
+        { label: 'Gallery', value: `${galleryItems.length}` },
+        { label: 'Videos', value: `${videoItems.length}` },
+        ...dish.info.map(item => ({ label: item.label, value: item.value, large: item.large }))
+    ];
 
-function initRealityGrid(items) {
-    const grid = document.getElementById('realityGrid');
-    if (!grid) return;
+    if (videoItems.length > 0) {
+        videoItems.slice(0, 3).forEach((item, index) => {
+            fragments.push({
+                label: `Clip ${String(index + 1).padStart(2, '0')}`,
+                value: item.alt
+            });
+        });
+    } else if (dish.description[0]) {
+        fragments.push({
+            label: 'Excerpt',
+            value: dish.description[0]
+        });
+    }
 
-    if (items.length === 0) {
-        grid.innerHTML = '<div class="empty-state">暂无实拍素材</div>';
+    return fragments.map(item => `
+        <article class="fragment-item">
+            <span class="fragment-item-label">${item.label}</span>
+            <div class="fragment-item-value ${item.large ? 'large' : ''}">${item.value}</div>
+        </article>
+    `).join('');
+}
+
+function initDisplayWall(displayItems) {
+    const displayWall = document.getElementById('winDisplayWall');
+    if (!displayWall) return;
+
+    if (displayItems.length === 0) {
+        displayWall.innerHTML = '<div class="detail-empty-state">暫無可展示圖片</div>';
         return;
     }
 
-    grid.innerHTML = items.map((item, index) => {
-        // 改进的尺寸分配策略 - 更有设计感
-        let sizeClass = '';
-        const itemCount = items.length;
+    displayWall.innerHTML = displayItems.map(item => `
+        <img src="${item.src}" alt="${item.alt}" data-lightbox-src="${item.src}" data-lightbox-alt="${item.alt}" />
+    `).join('');
 
-        // 根据数量动态调整布局策略
-        if (itemCount <= 3) {
-            // 少量图片：第一张large，其他normal
-            if (index === 0) sizeClass = 'large';
-        } else if (itemCount <= 6) {
-            // 中等数量：第一张tall，第三张wide
-            if (index === 0) sizeClass = 'tall';
-            else if (index === 2) sizeClass = 'wide';
-        } else {
-            // 较多数量：使用pattern增加变化
-            // Pattern: tall, normal, normal, wide, normal, tall, ...
-            const pattern = index % 6;
-            if (pattern === 0) sizeClass = 'tall';
-            else if (pattern === 3) sizeClass = 'wide';
-        }
-
-        if (item.type === 'video') {
-            return `
-                <div class="masonry-item ${sizeClass}"
-                     data-src="${item.src}"
-                     data-alt="${item.alt}"
-                     data-type="video"
-                     onclick="openRealityExplanation(this)">
-                    <video src="${item.src}" alt="${item.alt}" muted loop playsinline
-                           onmouseenter="this.play()" onmouseleave="this.pause();this.currentTime=0;"></video>
-                </div>
-            `;
-        } else {
-            return `
-                <div class="masonry-item ${sizeClass}"
-                     data-src="${item.src}"
-                     data-alt="${item.alt}"
-                     data-type="image"
-                     onclick="openRealityExplanation(this)">
-                    <img src="${item.src}" alt="${item.alt}" loading="lazy">
-                </div>
-            `;
-        }
-    }).join('');
-}
-
-// ===========================
-// 实拍素材解释浮层
-// ===========================
-
-function openRealityExplanation(element) {
-    // 复用AI解释的浮层结构
-    const overlay = document.getElementById('aiExplanationOverlay');
-    const img = document.getElementById('aiExplanationImg');
-    const title = document.getElementById('aiExplanationTitle');
-    const desc = document.getElementById('aiExplanationDesc');
-
-    if (!overlay || !title || !desc) return;
-
-    // 隐藏图片（CSS已经隐藏了，这里确保不显示）
-    if (img) img.style.display = 'none';
-
-    const alt = element.dataset.alt || '';
-    const type = element.dataset.type || 'image';
-
-    title.textContent = alt;
-    desc.textContent = getRealityExplanation(alt, type);
-
-    // 获取点击图片的位置
-    const rect = element.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // 设置浮层位置
-    overlay.style.display = 'block';
-
-    // 等待一帧让浏览器计算浮层尺寸
-    requestAnimationFrame(() => {
-        const overlayRect = overlay.getBoundingClientRect();
-        let left, top;
-
-        // 水平居中
-        left = rect.left + rect.width / 2 - overlayRect.width / 2;
-
-        // 确保不超出屏幕左右边界
-        left = Math.max(20, Math.min(left, viewportWidth - overlayRect.width - 20));
-
-        // 垂直方向：优先显示在图片下方，空间不够则显示在上方
-        if (rect.bottom + overlayRect.height + 20 < viewportHeight) {
-            top = rect.bottom + 12;
-        } else if (rect.top - overlayRect.height - 20 > 0) {
-            top = rect.top - overlayRect.height - 12;
-        } else {
-            // 如果上下都不够，就居中显示
-            top = (viewportHeight - overlayRect.height) / 2;
-        }
-
-        overlay.style.left = left + 'px';
-        overlay.style.top = top + 'px';
-        overlay.classList.add('active');
+    Array.from(displayWall.querySelectorAll('img')).forEach(image => {
+        image.addEventListener('click', function() {
+            openLightbox(image.dataset.lightboxSrc || image.src, image.dataset.lightboxAlt || image.alt);
+        });
     });
 }
 
-function getRealityExplanation(alt, type) {
-    const typeText = type === 'video' ? '实拍视频' : '实拍照片';
+function initRealityGallery(galleryItems) {
+    const galleryGrid = document.getElementById('winGalleryGrid');
+    if (!galleryGrid) return;
 
-    const explanations = {
-        '腊肠特写': '这是一张精心拍摄的腊肠特写照片，展现了传统腊肠独特的质感和诱人的油润光泽。通过专业摄影技术，真实记录了腊肠的纹理和色彩细节。',
-        '煲仔饭': '实拍煲仔饭成品，展示了传统烹饪工艺的精髓。米饭颗粒分明，腊肠切片均匀，整体呈现出诱人的色泽和香气。',
-        '制作过程': '记录了传统美食制作的真实过程，捕捉了烹饪中的关键步骤。火候的掌控、食材的搭配都在镜头下一览无余。',
-    };
-
-    return explanations[alt] || `这是一张${typeText}，真实记录了传统美食的制作过程或成品。通过镜头，我们捕捉了食物最真实的质感、色彩和细节，展现了传统烹饪文化的魅力。`;
-}
-
-// ===========================
-// 右侧AI内容网格
-// ===========================
-
-function initAIGrid(items) {
-    const grid = document.getElementById('aiGrid');
-    if (!grid) return;
-
-    if (items.length === 0) {
-        grid.innerHTML = '<div class="empty-state">暂无AI生成图像</div>';
+    if (galleryItems.length === 0) {
+        galleryGrid.innerHTML = '<div class="detail-empty-state">暫無圖集素材</div>';
         return;
     }
 
-    grid.innerHTML = items.map((item, index) => {
-        // 改进的尺寸分配 - 与左侧对称但有变化
-        let sizeClass = '';
-        const itemCount = items.length;
+    galleryGrid.innerHTML = galleryItems.map((item, index) =>
+        `<img src="${item.src}" alt="${item.alt}" data-image-index="${index}" />`
+    ).join('');
 
-        if (itemCount <= 3) {
-            // 少量图片：第二张large，其他normal
-            if (index === 1) sizeClass = 'large';
-        } else if (itemCount <= 6) {
-            // 中等数量：第二张tall，第五张wide
-            if (index === 1) sizeClass = 'tall';
-            else if (index === 4) sizeClass = 'wide';
-        } else {
-            // 较多数量：使用pattern（与左侧错开）
-            const pattern = index % 6;
-            if (pattern === 2) sizeClass = 'tall';
-            else if (pattern === 5) sizeClass = 'wide';
-        }
-
-        return `
-            <div class="masonry-item ai-item ${sizeClass}"
-                 data-src="${item.src}"
-                 data-alt="${item.alt}"
-                 onclick="openAIExplanation(this)">
-                <img src="${item.src}" alt="${item.alt}" loading="lazy">
-            </div>
-        `;
-    }).join('');
-}
-
-// ===========================
-// AI解释浮层
-// ===========================
-
-function openAIExplanation(element) {
-    const overlay = document.getElementById('aiExplanationOverlay');
-    const img = document.getElementById('aiExplanationImg');
-    const title = document.getElementById('aiExplanationTitle');
-    const desc = document.getElementById('aiExplanationDesc');
-
-    if (!overlay || !title || !desc) return;
-
-    // 隐藏图片元素
-    if (img) img.style.display = 'none';
-
-    title.textContent = element.dataset.alt || 'AI Generated Image';
-    desc.textContent = getAIExplanation(element.dataset.alt);
-
-    // 获取点击图片的位置
-    const rect = element.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // 设置浮层位置
-    overlay.style.display = 'block';
-
-    // 等待一帧让浏览器计算浮层尺寸
-    requestAnimationFrame(() => {
-        const overlayRect = overlay.getBoundingClientRect();
-        let left, top;
-
-        // 水平居中
-        left = rect.left + rect.width / 2 - overlayRect.width / 2;
-
-        // 确保不超出屏幕左右边界
-        left = Math.max(20, Math.min(left, viewportWidth - overlayRect.width - 20));
-
-        // 垂直方向：优先显示在图片下方，空间不够则显示在上方
-        if (rect.bottom + overlayRect.height + 20 < viewportHeight) {
-            top = rect.bottom + 12;
-        } else if (rect.top - overlayRect.height - 20 > 0) {
-            top = rect.top - overlayRect.height - 12;
-        } else {
-            // 如果上下都不够，就居中显示
-            top = (viewportHeight - overlayRect.height) / 2;
-        }
-
-        overlay.style.left = left + 'px';
-        overlay.style.top = top + 'px';
-        overlay.classList.add('active');
-    });
-}
-
-function closeAIExplanation() {
-    const overlay = document.getElementById('aiExplanationOverlay');
-    const img = document.getElementById('aiExplanationImg');
-    if (overlay) {
-        overlay.classList.remove('active');
-        // 等待动画完成后隐藏
-        setTimeout(() => {
-            overlay.style.display = 'none';
-            // 重置图片显示状态
-            if (img) img.style.display = '';
-        }, 300);
-    }
-}
-
-function getAIExplanation(alt) {
-    // 简单的解释文本生成逻辑
-    // 实际项目中可以从数据中读取更详细的说明
-    const explanations = {
-        '腊肠特写': 'AI生成的腊肠特写图像，展现了传统腊肠的质感和色泽。通过深度学习模型，AI重现了腊肠独特的纹理和诱人的油润光泽，体现了传统食材的魅力。',
-        '煲仔饭': 'AI视角下的煲仔饭，融合了传统烹饪艺术与现代生成技术。图像展现了米饭的颗粒感、腊肠的切片形态以及整体的蒸汽氛围。',
-        '制作过程': 'AI捕捉的制作过程瞬间，通过生成式模型重现了传统烹饪的动态美。火光、蒸汽、锅气被AI以独特的艺术视角呈现。',
+    const thumbnails = Array.from(galleryGrid.querySelectorAll('img'));
+    const setActiveThumbnail = function(activeIndex) {
+        thumbnails.forEach((thumb, index) => {
+            thumb.classList.toggle('is-active', index === activeIndex);
+        });
     };
 
-    return explanations[alt] || '这张AI生成图像通过先进的生成模型，以独特的艺术视角重新诠释了传统美食文化。AI学习了数千张美食图像，捕捉了食物的质感、光影和色彩，创造出既真实又具有艺术感的视觉作品。';
-}
+    thumbnails.forEach((thumb, index) => {
+        thumb.addEventListener('click', function() {
+            setActiveThumbnail(index);
+            openLightbox(thumb.src, thumb.alt);
+        });
+    });
 
-// ===========================
-// 3D模型加载
-// ===========================
+    setActiveThumbnail(0);
+}
 
 function getModelPath(dishId) {
     return detailModelConfig[dishId] || '';
@@ -353,7 +202,7 @@ function initModelStage(dishId) {
     }
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x000000, 35, 120);
+    scene.fog = new THREE.Fog(0xefe3d8, 35, 120);
 
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
     camera.position.set(0, 2, 22);
@@ -376,25 +225,23 @@ function initModelStage(dishId) {
     controls.autoRotateSpeed = 0.8;
     controls.target.set(0, 0, 0);
 
-    // 灯光
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
     directionalLight.position.set(50, 50, 50);
     directionalLight.castShadow = true;
-    const pointLight1 = new THREE.PointLight(0xff6b6b, 0.5, 100);
+    const pointLight1 = new THREE.PointLight(0xff6b6b, 0.3, 100);
     pointLight1.position.set(20, 20, 20);
-    const pointLight2 = new THREE.PointLight(0x4ecdc4, 0.5, 100);
+    const pointLight2 = new THREE.PointLight(0x4ecdc4, 0.3, 100);
     pointLight2.position.set(-20, -20, 20);
 
     scene.add(ambientLight, directionalLight, pointLight1, pointLight2);
 
-    // 底部阴影
     const baseShadow = new THREE.Mesh(
         new THREE.CircleGeometry(6.5, 64),
         new THREE.MeshBasicMaterial({
             color: 0x000000,
             transparent: true,
-            opacity: 0.15
+            opacity: 0.1
         })
     );
     baseShadow.rotation.x = -Math.PI / 2;
@@ -442,7 +289,7 @@ function initModelStage(dishId) {
             object,
             resize() {
                 const width = stage.clientWidth || 320;
-                const height = stage.clientHeight || 320;
+                const height = stage.clientHeight || 240;
                 renderer.setSize(width, height);
                 camera.aspect = width / height;
                 camera.updateProjectionMatrix();
@@ -469,10 +316,6 @@ function initModelStage(dishId) {
     });
 }
 
-// ===========================
-// Lightbox（用于实拍图片）
-// ===========================
-
 function initLightbox() {
     const lightbox = document.createElement('div');
     lightbox.className = 'lightbox-overlay';
@@ -482,31 +325,11 @@ function initLightbox() {
 
     lightbox.addEventListener('click', () => {
         lightbox.classList.remove('active');
-        document.body.style.overflow = '';
     });
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeAIExplanation();
-            const lightbox = document.getElementById('lightboxOverlay');
-            if (lightbox) {
-                lightbox.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-        }
-    });
-
-    // 点击浮层外部关闭AI解释
-    document.addEventListener('click', function(e) {
-        const overlay = document.getElementById('aiExplanationOverlay');
-        if (overlay && overlay.classList.contains('active')) {
-            // 检查点击是否在浮层或AI图片上
-            const isClickOnOverlay = overlay.contains(e.target);
-            const isClickOnAIItem = e.target.closest('.ai-item');
-
-            if (!isClickOnOverlay && !isClickOnAIItem) {
-                closeAIExplanation();
-            }
+            lightbox.classList.remove('active');
         }
     });
 }
@@ -519,12 +342,7 @@ function openLightbox(src, alt) {
     lightboxImg.src = src;
     lightboxImg.alt = alt || '';
     lightbox.classList.add('active');
-    document.body.style.overflow = 'hidden';
 }
-
-// ===========================
-// 窗口resize处理
-// ===========================
 
 window.addEventListener('resize', debounce(function() {
     if (modelPreview) {
@@ -544,24 +362,24 @@ function debounce(fn, delay) {
 }
 
 // ===========================
-// 粒子背景系统
+// 粒子背景系统（与首页一致）
 // ===========================
-
 (function initDetailParticles() {
     const canvas = document.getElementById('detail-particle-canvas');
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
 
+    // 与首页相同的彩色粒子色板
     const palette = [
-        [255, 107, 107],
-        [255, 46,  143],
-        [255, 144, 33],
-        [148, 237, 92],
-        [254, 202, 87],
-        [255, 159, 243],
-        [186, 234, 169],
-        [74,  144, 217],
+        [255, 107, 107],  // accent-red
+        [255, 46,  143],  // pink
+        [255, 144, 33],   // orange
+        [148, 237, 92],   // green
+        [254, 202, 87],   // gold
+        [255, 159, 243],  // purple-pink
+        [186, 234, 169],  // light-green
+        [74,  144, 217],  // blue
     ];
 
     let W, H;
@@ -573,11 +391,12 @@ function debounce(fn, delay) {
         H = canvas.height = window.innerHeight;
     }
 
+    // 暴露给 resize 监听器
     window.resizeParticleCanvas = resize;
 
     function createParticles() {
         particles = [];
-        const count = Math.floor((W * H) / 6000);
+        const count = Math.floor((W * H) / 6000); // 密度自适应
         for (let i = 0; i < count; i++) {
             const col = palette[Math.floor(Math.random() * palette.length)];
             particles.push({
@@ -587,8 +406,8 @@ function debounce(fn, delay) {
                 vx:   (Math.random() - 0.5) * 0.35,
                 vy:   (Math.random() - 0.5) * 0.35,
                 col:  col,
-                a:    Math.random() * 0.5 + 0.15,
-                pulse: Math.random() * Math.PI * 2,
+                a:    Math.random() * 0.5 + 0.15,   // 透明度
+                pulse: Math.random() * Math.PI * 2,  // 闪烁相位
                 pulseSpeed: Math.random() * 0.02 + 0.005
             });
         }
@@ -598,6 +417,7 @@ function debounce(fn, delay) {
         ctx.clearRect(0, 0, W, H);
 
         particles.forEach(p => {
+            // 缓慢闪烁
             p.pulse += p.pulseSpeed;
             const alpha = p.a + Math.sin(p.pulse) * 0.12;
 
@@ -606,9 +426,11 @@ function debounce(fn, delay) {
             ctx.fillStyle = `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${alpha})`;
             ctx.fill();
 
+            // 移动
             p.x += p.vx;
             p.y += p.vy;
 
+            // 边界环绕
             if (p.x < -5)  p.x = W + 5;
             if (p.x > W+5) p.x = -5;
             if (p.y < -5)  p.y = H + 5;
