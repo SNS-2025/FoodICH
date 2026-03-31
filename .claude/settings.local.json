@@ -15,7 +15,8 @@
       "Bash(security find-internet-password:*)",
       "Bash(security delete-internet-password:*)",
       "Bash(git add:*)",
-      "Bash(GIT_TRACE=1 GIT_CURL_VERBOSE=1 git push:*)"
+      "Bash(GIT_TRACE=1 GIT_CURL_VERBOSE=1 git push:*)",
+      "Bash(ssh -T git@github.com)"
     ]
   }
 }
