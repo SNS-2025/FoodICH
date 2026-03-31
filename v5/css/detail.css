@@ -1,13 +1,13 @@
 /* ========================
-   FOOD DETAIL PAGE - v5 现代艺术布局
+   FOOD DETAIL PAGE - v5 弧形环幕布局
    三栏布局：左侧实拍 | 中间3D+标题 | 右侧AI
+   弧形流动效果，中间遮罩窗口
    ======================== */
 
 body.detail-page {
     min-height: 100vh;
     width: 100vw;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
     background: #0a0a0a;
     cursor: default;
 }
@@ -52,68 +52,45 @@ body.detail-page {
 }
 
 /* ===========================
-   三栏布局主体 - 改进版
+   弧形环幕容器
    =========================== */
 
-/* 左侧实拍栏 */
-.reality-column {
+.arc-cinema-container {
     position: fixed;
-    left: 0;
-    top: 0;
-    width: calc((100vw - 420px) / 2);
-    min-width: 260px;
-    max-width: 400px;
-    height: 100vh;
-    padding: 100px 20px 40px 24px;
-    overflow-y: auto;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     z-index: 10;
-    scroll-behavior: smooth;
-    /* 从中间向左发散的透视效果 */
-    perspective: 1200px;
+    overflow: hidden;
+    /* 弧形透视 */
+    perspective: 1500px;
+    perspective-origin: 50% 50%;
 }
 
-/* 中间3D+标题舞台 - 完美居中 */
-.center-stage {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+/* ===========================
+   左侧实拍栏 - 弧形轨道
+   =========================== */
+
+.reality-column {
+    position: relative;
+    width: calc((100vw - 500px) / 2);
+    min-width: 300px;
+    height: 100vh;
+    z-index: 10;
+    overflow: hidden;
+    /* 左侧栏标签 */
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 5;
-    pointer-events: none;
-    /* 确保不受左右栏影响 */
-    width: 420px;
-    margin: 0 auto;
-}
-
-/* 右侧AI栏 */
-.ai-column {
-    position: fixed;
-    right: 0;
-    top: 0;
-    width: calc((100vw - 420px) / 2);
-    min-width: 260px;
-    max-width: 400px;
-    height: 100vh;
-    padding: 100px 24px 40px 20px;
-    overflow-y: auto;
-    z-index: 10;
-    scroll-behavior: smooth;
-    /* 从中间向右发散的透视效果 */
-    perspective: 1200px;
 }
 
 /* 列标题 */
 .column-header {
-    position: sticky;
+    position: absolute;
     top: 60px;
-    background: linear-gradient(to bottom, #0a0a0a 0%, #0a0a0a 60%, transparent 100%);
-    padding: 20px 8px 30px;
-    margin-bottom: 20px;
-    z-index: 2;
+    left: 24px;
+    z-index: 100;
+    padding: 20px 8px;
 }
 
 .column-label {
@@ -134,156 +111,133 @@ body.detail-page {
     color: rgba(255,255,255,0.8);
 }
 
-/* ===========================
-   瀑布流网格（左右侧）- 改进版
-   更有设计感和弹性
-   =========================== */
-
-.masonry-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding-bottom: 60px;
-    /* 添加弹性布局增强 */
-    grid-auto-rows: minmax(120px, auto);
-    grid-auto-flow: dense;
-}
-
-.masonry-grid::after {
-    content: '';
-    grid-column: 1 / -1;
-    height: 100px;
-}
-
-.masonry-item {
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(255,255,255,0.02);
-    /* 动态发散效果 */
-    transform-style: preserve-3d;
-    /* 统一设置高度比例 */
-    aspect-ratio: 1 / 1;
-}
-
-/* 空状态占位符 - 保持网格平衡 */
-.masonry-grid .empty-state {
-    grid-column: 1 / -1;
-    aspect-ratio: auto;
-    min-height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.02);
-    border: 1px dashed rgba(255,255,255,0.1);
-    border-radius: 16px;
-}
-
-/* 左侧栏图片：从右向左发散 */
-.reality-column .masonry-item {
-    transform-origin: right center;
-}
-
-/* 右侧栏图片：从左向右发散 */
-.ai-column .masonry-item {
-    transform-origin: left center;
-}
-
-.masonry-item::before {
-    content: '';
+/* 弧形轨道 */
+.arc-track {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg,
-        rgba(255,255,255,0.05) 0%,
-        transparent 50%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 1;
-    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 140px 0 60px;
+    /* 弧形轨迹 */
+    transform-style: preserve-3d;
+    perspective: 1000px;
 }
 
-/* 左侧栏hover：向左发散并旋转 */
-.reality-column .masonry-item:hover {
-    transform: translateX(-12px) translateY(-8px) scale(1.05) rotateY(-5deg);
-    box-shadow: 20px 15px 50px rgba(0,0,0,0.5);
+/* 流动项 */
+.arc-item {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    flex-shrink: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    background: rgba(255,255,255,0.02);
+    transition: transform 0.05s linear, opacity 0.05s linear;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    will-change: transform, opacity;
 }
 
-/* 右侧栏hover：向右发散并旋转 */
-.ai-column .masonry-item:hover {
-    transform: translateX(12px) translateY(-8px) scale(1.05) rotateY(5deg);
-    box-shadow: -20px 15px 50px rgba(0,0,0,0.5);
-}
-
-.masonry-item:hover::before {
-    opacity: 1;
-}
-
-.masonry-item img,
-.masonry-item video {
+.arc-item img,
+.arc-item video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
 
-/* 改进的尺寸变化 - 更有设计感 */
-.masonry-item.tall {
-    grid-row: span 2;
-    /* Tall items have taller aspect ratio */
-    aspect-ratio: 1 / 2;
-}
-
-.masonry-item.wide {
-    grid-column: span 2;
-    /* Wide items have wider aspect ratio */
-    aspect-ratio: 2 / 1;
-}
-
-/* 额外的尺寸变化 - 增加视觉多样性 */
-.masonry-item.large {
-    grid-column: span 2;
-    grid-row: span 2;
-    aspect-ratio: 1 / 1;
-}
-
-/* AI图片特殊样式 */
-.masonry-item.ai-item {
-    position: relative;
-}
-
-/* 改进的空状态样式 */
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: rgba(255,255,255,0.3);
-    font-family: 'Sora', sans-serif;
-    font-size: 0.85rem;
-    letter-spacing: 0.05em;
-}
-
-/* 增强视觉效果 - 为网格添加subtle gradient overlay */
-.masonry-item::after {
+.arc-item::before {
     content: '';
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 40%;
-    background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+    inset: 0;
+    background: linear-gradient(135deg,
+        rgba(255,255,255,0.08) 0%,
+        transparent 60%);
     opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
+    transition: opacity 0.4s ease;
     z-index: 2;
+    pointer-events: none;
 }
 
-.masonry-item:hover::after {
+.arc-item:hover::before {
     opacity: 1;
 }
 
+/* 左侧特殊样式 */
+.reality-column .arc-track {
+    align-items: flex-start;
+    padding-left: 24px;
+}
+
+.reality-column .arc-item {
+    transform-origin: right center;
+}
+
 /* ===========================
-   中间3D模型区
+   中间核心区 - 弧形遮罩窗口
+   =========================== */
+
+.center-stage {
+    position: relative;
+    width: 500px;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    /* 弧形遮罩 - 创建中间清晰边缘淡化的效果 */
+    pointer-events: none;
+    /* 添加微妙的发光边框效果 */
+    background: radial-gradient(
+        ellipse 80% 60% at 50% 50%,
+        rgba(255,107,107,0.05) 0%,
+        transparent 70%
+    );
+}
+
+.center-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    /* 遮罩效果：中心清晰，边缘淡化 */
+    filter: drop-shadow(0 0 80px rgba(255,107,107,0.25));
+}
+
+/* ===========================
+   右侧AI栏 - 弧形轨道
+   =========================== */
+
+.ai-column {
+    position: relative;
+    width: calc((100vw - 500px) / 2);
+    min-width: 300px;
+    height: 100vh;
+    z-index: 10;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-column .column-header {
+    left: auto;
+    right: 24px;
+    text-align: right;
+}
+
+.ai-column .arc-track {
+    align-items: flex-end;
+    padding-right: 24px;
+}
+
+.ai-column .arc-item {
+    transform-origin: left center;
+}
+
+/* ===========================
+   3D模型区
    =========================== */
 
 .model-container {
@@ -291,7 +245,6 @@ body.detail-page {
     height: 280px;
     margin-bottom: 24px;
     position: relative;
-    pointer-events: auto;
 }
 
 .model-stage {
@@ -352,7 +305,6 @@ body.detail-page {
     border-radius: 16px;
     backdrop-filter: blur(40px);
     box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-    pointer-events: auto;
 }
 
 .title-main {
@@ -508,80 +460,33 @@ body.detail-page {
 }
 
 /* ===========================
-   Lightbox（用于实拍图片）
-   =========================== */
-
-.lightbox-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 99998;
-    background: rgba(0,0,0,0.92);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: zoom-out;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.lightbox-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.lightbox-overlay img {
-    max-width: 90vw;
-    max-height: 90vh;
-    object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 20px 80px rgba(0,0,0,0.5);
-}
-
-/* ===========================
-   滚动条
-   =========================== */
-
-.reality-column::-webkit-scrollbar,
-.ai-column::-webkit-scrollbar {
-    width: 4px;
-}
-
-.reality-column::-webkit-scrollbar-track,
-.ai-column::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.reality-column::-webkit-scrollbar-thumb,
-.ai-column::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.15);
-    border-radius: 999px;
-}
-
-.reality-column::-webkit-scrollbar-thumb:hover,
-.ai-column::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.25);
-}
-
-/* ===========================
    响应式
    =========================== */
 
 @media (max-width: 1200px) {
     .reality-column,
     .ai-column {
-        width: calc((100vw - 380px) / 2);
-        min-width: 220px;
-        max-width: 350px;
+        width: calc((100vw - 450px) / 2);
+        min-width: 280px;
     }
 
     .center-stage {
-        width: 380px;
+        width: 450px;
+    }
+
+    .arc-item {
+        width: 200px;
+        height: 200px;
     }
 }
 
 @media (max-width: 900px) {
-    /* 移动端改为单列布局 */
+    /* 移动端回退到垂直布局 */
+    .arc-cinema-container {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
     .reality-column,
     .ai-column {
         position: relative;
@@ -591,36 +496,31 @@ body.detail-page {
         padding: 80px 24px 40px;
     }
 
+    .arc-track {
+        position: relative;
+        padding: 20px 0 40px;
+        align-items: center !important;
+    }
+
     .center-stage {
         position: relative;
-        left: 0;
-        top: 0;
-        transform: none;
-        margin: 0 auto;
-        padding: 100px 24px 40px;
         width: 100%;
-        max-width: 420px;
+        height: auto;
+        padding: 100px 24px 40px;
     }
 
     .column-header {
         position: relative;
         top: 0;
-        background: transparent;
+        left: 0 !important;
+        right: 0 !important;
+        text-align: left !important;
         padding: 20px 8px 20px;
-    }
-
-    .model-container {
-        max-width: 350px;
-        width: 100%;
     }
 
     .ai-explanation-content {
         grid-template-columns: 1fr;
         gap: 24px;
-    }
-
-    .ai-explanation-content img {
-        max-height: 50vh;
     }
 }
 
@@ -632,18 +532,9 @@ body.detail-page {
         font-size: 0.75rem;
     }
 
-    .masonry-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-        grid-auto-rows: minmax(140px, auto);
-    }
-
-    .masonry-item.tall,
-    .masonry-item.wide,
-    .masonry-item.large {
-        grid-column: span 1;
-        grid-row: span 1;
-        aspect-ratio: 1 / 1;
+    .arc-item {
+        width: 180px;
+        height: 180px;
     }
 
     .title-card {

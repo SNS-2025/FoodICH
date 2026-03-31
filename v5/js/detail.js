@@ -1,6 +1,6 @@
 // ===========================
-// FOOD DETAIL PAGE - v5 现代艺术布局
-// 三栏布局：左侧实拍 | 中间3D+标题 | 右侧AI
+// FOOD DETAIL PAGE - v5 弧形环幕布局
+// 左右独立循环动画 + 中间遮罩窗口
 // ===========================
 
 function getDishIdFromURL() {
@@ -17,6 +17,13 @@ const detailModelConfig = {
     'stir-fried-beef': '../models/spicy-ribs.fbx',
     'preserved-veg-pork': '../models/preserved-veg-pork.fbx',
     'vermicelli-shrimp': '../models/vermicelli-shrimp.fbx'
+};
+
+// 动画状态管理
+let animationState = {
+    leftTrack: null,
+    rightTrack: null,
+    isRunning: false
 };
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -51,18 +58,16 @@ function populatePage(dish) {
         ? dish.videoItems
         : mediaItems.filter(item => item.type === 'video');
 
-    // 左侧：实拍内容（displayItems + videoItems）
+    // 左侧：实拍内容
     const realityItems = [
         ...displayItems.map(item => ({ ...item, type: 'image', category: 'reality' })),
         ...videoItems.map(item => ({ ...item, category: 'reality' }))
     ];
 
-    // 右侧：AI生成内容（galleryItems）
+    // 右侧：AI生成内容
     const aiItems = galleryItems.map(item => ({ ...item, category: 'ai' }));
 
-    initRealityGrid(realityItems);
-    initAIGrid(aiItems);
-
+    initArcTracks(realityItems, aiItems);
     initLightbox();
 }
 
@@ -72,62 +77,198 @@ function setEl(id, text) {
 }
 
 // ===========================
-// 左侧实拍内容网格
+// 弧形轨道初始化
 // ===========================
 
-function initRealityGrid(items) {
-    const grid = document.getElementById('realityGrid');
-    if (!grid) return;
+function initArcTracks(realityItems, aiItems) {
+    const leftTrack = document.getElementById('realityTrack');
+    const rightTrack = document.getElementById('aiTrack');
 
+    if (!leftTrack || !rightTrack) return;
+
+    // 创建左侧流动项（从左外进入，向中间移动，消失后重新开始）
+    const leftElements = createArcItems(realityItems, 'reality');
+    leftTrack.innerHTML = leftElements;
+
+    // 创建右侧流动项（从中间滑出，向右外移动，消失后重新开始）
+    const rightElements = createArcItems(aiItems, 'ai');
+    rightTrack.innerHTML = rightElements;
+
+    // 启动动画
+    startArcAnimation(leftTrack, rightTrack, realityItems, aiItems);
+}
+
+function createArcItems(items, category) {
     if (items.length === 0) {
-        grid.innerHTML = '<div class="empty-state">暂无实拍素材</div>';
-        return;
+        return '<div class="empty-state">暂无内容</div>';
     }
 
-    grid.innerHTML = items.map((item, index) => {
-        // 改进的尺寸分配策略 - 更有设计感
-        let sizeClass = '';
-        const itemCount = items.length;
+    return items.map((item, index) => {
+        const isVideo = item.type === 'video';
+        const videoAttrs = isVideo
+            ? 'muted loop playsinline onmouseenter="this.play()" onmouseleave="this.pause();this.currentTime=0;"'
+            : '';
 
-        // 根据数量动态调整布局策略
-        if (itemCount <= 3) {
-            // 少量图片：第一张large，其他normal
-            if (index === 0) sizeClass = 'large';
-        } else if (itemCount <= 6) {
-            // 中等数量：第一张tall，第三张wide
-            if (index === 0) sizeClass = 'tall';
-            else if (index === 2) sizeClass = 'wide';
-        } else {
-            // 较多数量：使用pattern增加变化
-            // Pattern: tall, normal, normal, wide, normal, tall, ...
-            const pattern = index % 6;
-            if (pattern === 0) sizeClass = 'tall';
-            else if (pattern === 3) sizeClass = 'wide';
-        }
-
-        if (item.type === 'video') {
-            return `
-                <div class="masonry-item ${sizeClass}"
-                     data-src="${item.src}"
-                     data-alt="${item.alt}"
-                     data-type="video"
-                     onclick="openRealityExplanation(this)">
-                    <video src="${item.src}" alt="${item.alt}" muted loop playsinline
-                           onmouseenter="this.play()" onmouseleave="this.pause();this.currentTime=0;"></video>
-                </div>
-            `;
-        } else {
-            return `
-                <div class="masonry-item ${sizeClass}"
-                     data-src="${item.src}"
-                     data-alt="${item.alt}"
-                     data-type="image"
-                     onclick="openRealityExplanation(this)">
-                    <img src="${item.src}" alt="${item.alt}" loading="lazy">
-                </div>
-            `;
-        }
+        return `
+            <div class="arc-item"
+                 data-src="${item.src}"
+                 data-alt="${item.alt}"
+                 data-type="${isVideo ? 'video' : 'image'}"
+                 data-index="${index}"
+                 onclick="${category === 'ai' ? 'openAIExplanation(this)' : 'openRealityExplanation(this)'}">
+                ${isVideo
+                    ? `<video src="${item.src}" alt="${item.alt}" ${videoAttrs}></video>`
+                    : `<img src="${item.src}" alt="${item.alt}" loading="lazy">`
+                }
+            </div>
+        `;
     }).join('');
+}
+
+// ===========================
+// 弧形流动动画
+// ===========================
+
+function startArcAnimation(leftTrack, rightTrack, realityItems, aiItems) {
+    if (animationState.isRunning) return;
+    animationState.isRunning = true;
+
+    // 动画参数
+    const config = {
+        itemHeight: 220,      // 每个项的高度
+        gap: 30,              // 项之间的间距
+        speed: 0.8,           // 移动速度 (px/frame)
+        viewportHeight: window.innerHeight,
+        centerZoneStart: 0.35,  // 中间区域开始位置 (相对视口比例)
+        centerZoneEnd: 0.65,    // 中间区域结束位置
+        decelerationZone: 0.1   // 中间区域减速范围
+    };
+
+    const leftItems = leftTrack.querySelectorAll('.arc-item');
+    const rightItems = rightTrack.querySelectorAll('.arc-item');
+
+    // 初始化左侧轨道（从左外滑入）
+    let leftOffset = -config.viewportHeight; // 从屏幕上方外侧开始
+
+    // 初始化右侧轨道（从中间开始）
+    let rightOffset = 0; // 从中间开始
+
+    function animate() {
+        if (!animationState.isRunning) return;
+
+        // 左侧：从上往下（左外→中间→下外→循环）
+        leftOffset += config.speed;
+        const leftTotalHeight = realityItems.length * (config.itemHeight + config.gap);
+        if (leftOffset > config.viewportHeight + leftTotalHeight) {
+            leftOffset = -leftTotalHeight;
+        }
+        updateLeftTrack(leftItems, leftOffset, config);
+
+        // 右侧：从中间往下（中间→右外→循环）
+        rightOffset += config.speed;
+        const rightTotalHeight = aiItems.length * (config.itemHeight + config.gap);
+        if (rightOffset > config.viewportHeight + rightTotalHeight) {
+            rightOffset = -rightTotalHeight;
+        }
+        updateRightTrack(rightItems, rightOffset, config);
+
+        requestAnimationFrame(animate);
+    }
+
+    // 启动动画循环
+    animate();
+
+    // 保存动画状态
+    animationState.leftTrack = { track: leftTrack, items: leftItems, config };
+    animationState.rightTrack = { track: rightTrack, items: rightItems, config };
+}
+
+function updateLeftTrack(items, offset, config) {
+    items.forEach((item, index) => {
+        const baseY = offset + index * (config.itemHeight + config.gap);
+        const centerY = baseY + config.itemHeight / 2;
+
+        // 计算在视口中的位置 (0-1)
+        const normalizedY = centerY / config.viewportHeight;
+
+        // 中间区域清晰，边缘淡化
+        const inCenter = normalizedY >= config.centerZoneStart && normalizedY <= config.centerZoneEnd;
+
+        // 透明度：中间区域为1，边缘渐变到0.4
+        let opacity = 1;
+        if (!inCenter) {
+            const distanceFromCenter = normalizedY < config.centerZoneStart
+                ? config.centerZoneStart - normalizedY
+                : normalizedY - config.centerZoneEnd;
+            opacity = Math.max(0.4, 1 - distanceFromCenter * 1.5);
+        }
+
+        // 弧形效果：轻微旋转、缩放和透视
+        const rotationAngle = (normalizedY - 0.5) * 20; // -10° 到 10°
+        const scale = inCenter ? 1 : Math.max(0.75, 0.85 + (1 - Math.abs(normalizedY - 0.5) * 2) * 0.15);
+        const translateZ = inCenter ? 50 : 0;
+
+        // 应用变换
+        item.style.transform = `
+            translateY(${baseY}px)
+            translateZ(${translateZ}px)
+            rotateX(${rotationAngle}deg)
+            scale(${scale})
+        `;
+        item.style.opacity = opacity;
+
+        // 中间区域添加发光效果
+        if (inCenter) {
+            item.style.filter = 'drop-shadow(0 0 40px rgba(255,107,107,0.4)) brightness(1.1)';
+            item.style.zIndex = '10';
+        } else {
+            item.style.filter = 'brightness(0.9)';
+            item.style.zIndex = '1';
+        }
+    });
+}
+
+function updateRightTrack(items, offset, config) {
+    items.forEach((item, index) => {
+        const baseY = offset + index * (config.itemHeight + config.gap);
+        const centerY = baseY + config.itemHeight / 2;
+
+        // 计算在视口中的位置 (0-1)
+        const normalizedY = centerY / config.viewportHeight;
+
+        // 中间区域清晰，边缘淡化
+        const inCenter = normalizedY >= config.centerZoneStart && normalizedY <= config.centerZoneEnd;
+
+        // 透明度
+        let opacity = 1;
+        if (!inCenter) {
+            const distanceFromCenter = normalizedY < config.centerZoneStart
+                ? config.centerZoneStart - normalizedY
+                : normalizedY - config.centerZoneEnd;
+            opacity = Math.max(0.4, 1 - distanceFromCenter * 1.5);
+        }
+
+        // 弧形效果：反向旋转
+        const rotationAngle = (normalizedY - 0.5) * -20;
+        const scale = inCenter ? 1 : Math.max(0.75, 0.85 + (1 - Math.abs(normalizedY - 0.5) * 2) * 0.15);
+        const translateZ = inCenter ? 50 : 0;
+
+        item.style.transform = `
+            translateY(${baseY}px)
+            translateZ(${translateZ}px)
+            rotateX(${rotationAngle}deg)
+            scale(${scale})
+        `;
+        item.style.opacity = opacity;
+
+        if (inCenter) {
+            item.style.filter = 'drop-shadow(0 0 40px rgba(255,107,107,0.4)) brightness(1.1)';
+            item.style.zIndex = '10';
+        } else {
+            item.style.filter = 'brightness(0.9)';
+            item.style.zIndex = '1';
+        }
+    });
 }
 
 // ===========================
@@ -135,7 +276,6 @@ function initRealityGrid(items) {
 // ===========================
 
 function openRealityExplanation(element) {
-    // 复用AI解释的浮层结构
     const overlay = document.getElementById('aiExplanationOverlay');
     const img = document.getElementById('aiExplanationImg');
     const title = document.getElementById('aiExplanationTitle');
@@ -143,7 +283,6 @@ function openRealityExplanation(element) {
 
     if (!overlay || !title || !desc) return;
 
-    // 隐藏图片（CSS已经隐藏了，这里确保不显示）
     if (img) img.style.display = 'none';
 
     const alt = element.dataset.alt || '';
@@ -152,32 +291,24 @@ function openRealityExplanation(element) {
     title.textContent = alt;
     desc.textContent = getRealityExplanation(alt, type);
 
-    // 获取点击图片的位置
     const rect = element.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    // 设置浮层位置
     overlay.style.display = 'block';
 
-    // 等待一帧让浏览器计算浮层尺寸
     requestAnimationFrame(() => {
         const overlayRect = overlay.getBoundingClientRect();
         let left, top;
 
-        // 水平居中
         left = rect.left + rect.width / 2 - overlayRect.width / 2;
-
-        // 确保不超出屏幕左右边界
         left = Math.max(20, Math.min(left, viewportWidth - overlayRect.width - 20));
 
-        // 垂直方向：优先显示在图片下方，空间不够则显示在上方
         if (rect.bottom + overlayRect.height + 20 < viewportHeight) {
             top = rect.bottom + 12;
         } else if (rect.top - overlayRect.height - 20 > 0) {
             top = rect.top - overlayRect.height - 12;
         } else {
-            // 如果上下都不够，就居中显示
             top = (viewportHeight - overlayRect.height) / 2;
         }
 
@@ -200,49 +331,6 @@ function getRealityExplanation(alt, type) {
 }
 
 // ===========================
-// 右侧AI内容网格
-// ===========================
-
-function initAIGrid(items) {
-    const grid = document.getElementById('aiGrid');
-    if (!grid) return;
-
-    if (items.length === 0) {
-        grid.innerHTML = '<div class="empty-state">暂无AI生成图像</div>';
-        return;
-    }
-
-    grid.innerHTML = items.map((item, index) => {
-        // 改进的尺寸分配 - 与左侧对称但有变化
-        let sizeClass = '';
-        const itemCount = items.length;
-
-        if (itemCount <= 3) {
-            // 少量图片：第二张large，其他normal
-            if (index === 1) sizeClass = 'large';
-        } else if (itemCount <= 6) {
-            // 中等数量：第二张tall，第五张wide
-            if (index === 1) sizeClass = 'tall';
-            else if (index === 4) sizeClass = 'wide';
-        } else {
-            // 较多数量：使用pattern（与左侧错开）
-            const pattern = index % 6;
-            if (pattern === 2) sizeClass = 'tall';
-            else if (pattern === 5) sizeClass = 'wide';
-        }
-
-        return `
-            <div class="masonry-item ai-item ${sizeClass}"
-                 data-src="${item.src}"
-                 data-alt="${item.alt}"
-                 onclick="openAIExplanation(this)">
-                <img src="${item.src}" alt="${item.alt}" loading="lazy">
-            </div>
-        `;
-    }).join('');
-}
-
-// ===========================
 // AI解释浮层
 // ===========================
 
@@ -254,38 +342,29 @@ function openAIExplanation(element) {
 
     if (!overlay || !title || !desc) return;
 
-    // 隐藏图片元素
     if (img) img.style.display = 'none';
 
     title.textContent = element.dataset.alt || 'AI Generated Image';
     desc.textContent = getAIExplanation(element.dataset.alt);
 
-    // 获取点击图片的位置
     const rect = element.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    // 设置浮层位置
     overlay.style.display = 'block';
 
-    // 等待一帧让浏览器计算浮层尺寸
     requestAnimationFrame(() => {
         const overlayRect = overlay.getBoundingClientRect();
         let left, top;
 
-        // 水平居中
         left = rect.left + rect.width / 2 - overlayRect.width / 2;
-
-        // 确保不超出屏幕左右边界
         left = Math.max(20, Math.min(left, viewportWidth - overlayRect.width - 20));
 
-        // 垂直方向：优先显示在图片下方，空间不够则显示在上方
         if (rect.bottom + overlayRect.height + 20 < viewportHeight) {
             top = rect.bottom + 12;
         } else if (rect.top - overlayRect.height - 20 > 0) {
             top = rect.top - overlayRect.height - 12;
         } else {
-            // 如果上下都不够，就居中显示
             top = (viewportHeight - overlayRect.height) / 2;
         }
 
@@ -300,18 +379,14 @@ function closeAIExplanation() {
     const img = document.getElementById('aiExplanationImg');
     if (overlay) {
         overlay.classList.remove('active');
-        // 等待动画完成后隐藏
         setTimeout(() => {
             overlay.style.display = 'none';
-            // 重置图片显示状态
             if (img) img.style.display = '';
         }, 300);
     }
 }
 
 function getAIExplanation(alt) {
-    // 简单的解释文本生成逻辑
-    // 实际项目中可以从数据中读取更详细的说明
     const explanations = {
         '腊肠特写': 'AI生成的腊肠特写图像，展现了传统腊肠的质感和色泽。通过深度学习模型，AI重现了腊肠独特的纹理和诱人的油润光泽，体现了传统食材的魅力。',
         '煲仔饭': 'AI视角下的煲仔饭，融合了传统烹饪艺术与现代生成技术。图像展现了米饭的颗粒感、腊肠的切片形态以及整体的蒸汽氛围。',
@@ -470,7 +545,7 @@ function initModelStage(dishId) {
 }
 
 // ===========================
-// Lightbox（用于实拍图片）
+// Lightbox
 // ===========================
 
 function initLightbox() {
@@ -496,30 +571,17 @@ function initLightbox() {
         }
     });
 
-    // 点击浮层外部关闭AI解释
     document.addEventListener('click', function(e) {
         const overlay = document.getElementById('aiExplanationOverlay');
         if (overlay && overlay.classList.contains('active')) {
-            // 检查点击是否在浮层或AI图片上
             const isClickOnOverlay = overlay.contains(e.target);
-            const isClickOnAIItem = e.target.closest('.ai-item');
+            const isClickOnAIItem = e.target.closest('.arc-item');
 
             if (!isClickOnOverlay && !isClickOnAIItem) {
                 closeAIExplanation();
             }
         }
     });
-}
-
-function openLightbox(src, alt) {
-    const lightbox = document.getElementById('lightboxOverlay');
-    const lightboxImg = document.getElementById('lightboxImg');
-    if (!lightbox || !lightboxImg || !src) return;
-
-    lightboxImg.src = src;
-    lightboxImg.alt = alt || '';
-    lightbox.classList.add('active');
-    document.body.style.overflow = 'hidden';
 }
 
 // ===========================
@@ -532,6 +594,13 @@ window.addEventListener('resize', debounce(function() {
     }
     if (typeof window.resizeParticleCanvas === 'function') {
         window.resizeParticleCanvas();
+    }
+    // 更新动画配置中的视口高度
+    if (animationState.leftTrack) {
+        animationState.leftTrack.config.viewportHeight = window.innerHeight;
+    }
+    if (animationState.rightTrack) {
+        animationState.rightTrack.config.viewportHeight = window.innerHeight;
     }
 }, 300));
 

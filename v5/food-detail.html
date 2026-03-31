@@ -40,41 +40,46 @@
         <div class="desktop-label" id="desktopLabel"></div>
     </div>
 
-    <!-- 左侧：实拍内容 -->
-    <aside class="reality-column" id="realityColumn">
-        <div class="column-header">
-            <span class="column-label">REALITY</span>
-            <span class="column-subtitle">实拍记录</span>
-        </div>
-        <div class="masonry-grid" id="realityGrid"></div>
-    </aside>
-
-    <!-- 中间：3D模型 + 标题 -->
-    <main class="center-stage">
-        <div class="model-container">
-            <div class="model-stage" id="winModelStage">
-                <div class="model-status" id="winModelStatus">Loading 3D model...</div>
+    <!-- 弧形环幕容器 -->
+    <div class="arc-cinema-container">
+        <!-- 左侧：实拍内容循环区 -->
+        <aside class="reality-column" id="realityColumn">
+            <div class="column-header">
+                <span class="column-label">REALITY</span>
+                <span class="column-subtitle">实拍记录</span>
             </div>
-        </div>
+            <div class="arc-track" id="realityTrack"></div>
+        </aside>
 
-        <div class="title-card">
-            <div class="title-main">
-                <h1 class="title-zh" id="titleCardZh"></h1>
-                <span class="title-separator">·</span>
-                <div class="title-en" id="titleCardEn"></div>
+        <!-- 中间：3D模型 + 标题（弧形遮罩窗口） -->
+        <main class="center-stage" id="centerStage">
+            <div class="center-content">
+                <div class="model-container">
+                    <div class="model-stage" id="winModelStage">
+                        <div class="model-status" id="winModelStatus">Loading 3D model...</div>
+                    </div>
+                </div>
+
+                <div class="title-card">
+                    <div class="title-main">
+                        <h1 class="title-zh" id="titleCardZh"></h1>
+                        <span class="title-separator">·</span>
+                        <div class="title-en" id="titleCardEn"></div>
+                    </div>
+                    <div class="title-desc" id="titleDesc"></div>
+                </div>
             </div>
-            <div class="title-desc" id="titleDesc"></div>
-        </div>
-    </main>
+        </main>
 
-    <!-- 右侧：AI生成内容 -->
-    <aside class="ai-column" id="aiColumn">
-        <div class="column-header">
-            <span class="column-label">AI VISION</span>
-            <span class="column-subtitle">AI生成图像</span>
-        </div>
-        <div class="masonry-grid" id="aiGrid"></div>
-    </aside>
+        <!-- 右侧：AI生成内容循环区 -->
+        <aside class="ai-column" id="aiColumn">
+            <div class="column-header">
+                <span class="column-label">AI VISION</span>
+                <span class="column-subtitle">AI生成图像</span>
+            </div>
+            <div class="arc-track" id="aiTrack"></div>
+        </aside>
+    </div>
 
     <!-- 统一的图片解释浮层 -->
     <div class="ai-explanation-overlay" id="aiExplanationOverlay" style="display: none;">
