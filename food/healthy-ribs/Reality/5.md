@@ -1,0 +1,6 @@
+瀏陽蒸排骨是瀏陽蒸菜的經典，蘊含深厚文化。其歷史可追溯至明朝，當時因戰亂，瀏陽人口大減，客家人大量遷入，帶來獨特的飲食文化，如用砂鍋做「遊盤飯」「一鍋熟」。他們結合當地食材和木甑、竹籠，創出瀏陽蒸菜，蒸排骨也隨之誕生。另一說法是，百姓為躲避抓丁，只能夜間煮飯且避免炊煙，乾菜、臘貨等易保存、製作快的食材成為首選，烹飪多採用蒸煮。蒸排骨經簡單處理，加當地豆豉等調味料蒸熟，滿足當時需求，做法逐漸流傳。
+Liuyang steamed spareribs, a classic dish, are steeped in rich historical culture. Their origins date back to the Ming Dynasty when war reduced the local population, prompting an influx of Hakka people who introduced unique culinary practices. They combined local ingredients with wooden steamers and bamboo baskets, leading to the creation of Liuyang steamed dishes. Another theory suggests that these dishes emerged as a means for farmers to avoid detection during difficult times, cooking at night with minimal smoke. Dried vegetables and preserved goods became staples, with steamed spareribs prepared using local seasonings like fermented black beans.
+
+小陳（化名）為我們展示了他們家庭製作瀏陽蒸排骨的過程，並嘗試使用AI記錄了不同的偶然性，及受AI的啟發，創作了一道保留傳統味道的創新菜。
+
+Xiao Chen (pseudonym) demonstrated the home preparation of Liuyang steamed spareribs, using AI to document the process and inspire an innovative dish that maintains traditional flavors.
