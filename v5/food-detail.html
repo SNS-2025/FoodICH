@@ -11,8 +11,6 @@
     <link rel="stylesheet" href="css/detail.css">
 </head>
 <body class="detail-page">
-
-    <!-- Navigation -->
     <div class="hamburger-menu">
         <button class="hamburger-btn" onclick="toggleMenu()">
             <div class="hamburger-line"></div>
@@ -28,69 +26,84 @@
         </div>
     </div>
 
-    <!-- Back Button -->
     <button class="detail-back-btn" onclick="history.back()">
         <span>←</span> Back
     </button>
 
-    <!-- Particle Background -->
     <canvas id="detail-particle-canvas"></canvas>
 
-    <div class="detail-desktop-bg">
-        <div class="desktop-label" id="desktopLabel"></div>
-    </div>
-
-    <!-- 弧形环幕容器 -->
-    <div class="arc-cinema-container">
-        <!-- 左侧：实拍内容循环区 -->
-        <aside class="reality-column" id="realityColumn">
-            <div class="column-header">
-                <span class="column-label">REALITY</span>
-                <span class="column-subtitle">实拍记录</span>
-            </div>
-            <div class="arc-track" id="realityTrack"></div>
-        </aside>
-
-        <!-- 中间：3D模型 + 标题（弧形遮罩窗口） -->
-        <main class="center-stage" id="centerStage">
-            <div class="center-content">
-                <div class="model-container">
-                    <div class="model-stage" id="winModelStage">
-                        <div class="model-status" id="winModelStatus">Loading 3D model...</div>
-                    </div>
-                </div>
-
-                <div class="title-card">
-                    <div class="title-main">
-                        <h1 class="title-zh" id="titleCardZh"></h1>
-                        <span class="title-separator">·</span>
-                        <div class="title-en" id="titleCardEn"></div>
-                    </div>
-                    <div class="title-desc" id="titleDesc"></div>
+    <div class="detail-shell">
+        <header class="detail-header">
+            <div class="detail-kicker" id="detailKicker"></div>
+            <div class="detail-headline">
+                <span class="detail-number" id="detailNumber"></span>
+                <div class="detail-title-group">
+                    <h1 class="detail-title-zh" id="titleCardZh"></h1>
+                    <p class="detail-title-en" id="titleCardEn"></p>
                 </div>
             </div>
-        </main>
+        </header>
 
-        <!-- 右侧：AI生成内容循环区 -->
-        <aside class="ai-column" id="aiColumn">
-            <div class="column-header">
-                <span class="column-label">AI VISION</span>
-                <span class="column-subtitle">AI生成图像</span>
-            </div>
-            <div class="arc-track" id="aiTrack"></div>
-        </aside>
+        <section class="arc-installation" id="arcInstallation">
+            <div class="arc-ambient arc-ambient-left"></div>
+            <div class="arc-ambient arc-ambient-right"></div>
+
+            <aside class="side-gallery side-gallery-left" id="realityColumn" aria-label="Reality materials">
+                <div class="side-legend side-legend-left">
+                    <span class="side-legend-label">REALITY</span>
+                    <p class="side-legend-copy">真實紀錄沿左側環幕緩慢推進，保留手勢、火候與工序的溫度。</p>
+                </div>
+                <div class="arc-rim arc-rim-left" aria-hidden="true"></div>
+                <div class="arc-lane-track" id="realityTrack"></div>
+            </aside>
+
+            <main class="core-window" id="centerStage">
+                <div class="core-halo core-halo-outer" aria-hidden="true"></div>
+                <div class="core-halo core-halo-inner" aria-hidden="true"></div>
+
+                <section class="core-panel">
+                    <div class="core-panel-topline">
+                        <span class="core-badge">Inner Aperture</span>
+                        <span class="core-location" id="detailLocation"></span>
+                    </div>
+
+                    <div class="core-model-wrap">
+                        <div class="model-stage" id="winModelStage">
+                            <div class="model-status" id="winModelStatus">Loading 3D model...</div>
+                        </div>
+                    </div>
+
+                    <div class="core-copy">
+                        <p class="core-summary" id="titleDesc"></p>
+                    </div>
+
+                    <div class="core-stats" id="detailInfo"></div>
+                </section>
+
+                <div class="core-window-mask" aria-hidden="true">
+                    <div class="core-window-aperture"></div>
+                </div>
+            </main>
+
+            <aside class="side-gallery side-gallery-right" id="aiColumn" aria-label="AI materials">
+                <div class="side-legend side-legend-right">
+                    <span class="side-legend-label">AI VISION</span>
+                    <p class="side-legend-copy">生成視角沿右側展台展開，像傳承被重新想像後的另一條脈絡。</p>
+                </div>
+                <div class="arc-rim arc-rim-right" aria-hidden="true"></div>
+                <div class="arc-lane-track" id="aiTrack"></div>
+            </aside>
+        </section>
     </div>
 
-    <!-- 统一的图片解释浮层 -->
-    <div class="ai-explanation-overlay" id="aiExplanationOverlay" style="display: none;">
-        <button class="ai-explanation-close" onclick="closeAIExplanation()">×</button>
-        <div class="ai-explanation-content">
-            <img id="aiExplanationImg" src="" alt="" style="display: none;">
-            <div class="ai-explanation-text">
-                <h3 id="aiExplanationTitle"></h3>
-                <p id="aiExplanationDesc"></p>
-            </div>
+    <div class="material-note" id="materialNote" hidden>
+        <button class="material-note-close" id="materialNoteClose" aria-label="Close note">×</button>
+        <div class="material-note-meta">
+            <span class="material-note-side" id="materialNoteSide"></span>
+            <span class="material-note-index" id="materialNoteIndex"></span>
         </div>
+        <h3 class="material-note-title" id="materialNoteTitle"></h3>
+        <p class="material-note-body" id="materialNoteBody"></p>
     </div>
 
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
