@@ -127,38 +127,71 @@
             renderer.domElement.addEventListener('touchend', onTouchEnd, false);
         }
 
+        // Dynamic lights that follow camera
+        let keyLight, fillLight, rimLight, accentLight1, accentLight2;
+
         function addLights() {
-            // Studio lighting setup - three-point lighting
-            // Key light - main illumination from front-right
-            const keyLight = new THREE.DirectionalLight(0xffffff, 1.8);
-            keyLight.position.set(30, 40, 30);
+            // Ambient light - base illumination, never too dark
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            // Hemisphere light - soft sky/ground lighting
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+            scene.add(hemiLight);
+
+            // Key light - follows camera for always-good illumination
+            keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            keyLight.position.set(0, 20, 30);
             keyLight.castShadow = true;
             keyLight.shadow.mapSize.width = 2048;
             keyLight.shadow.mapSize.height = 2048;
             scene.add(keyLight);
 
-            // Fill light - softer light from left to reduce harsh shadows
-            const fillLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            fillLight.position.set(-30, 20, 20);
+            // Fill light - softer, also follows camera
+            fillLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            fillLight.position.set(-20, 15, 25);
             scene.add(fillLight);
 
-            // Rim/back light - creates edge highlight for depth
-            const rimLight = new THREE.DirectionalLight(0xffffff, 1.2);
-            rimLight.position.set(0, 10, -30);
+            // Rim light - for edge highlights
+            rimLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            rimLight.position.set(0, 10, -20);
             scene.add(rimLight);
 
-            // Ambient light - overall soft fill
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
+            // Accent lights - subtle color highlights, orbit around text
+            accentLight1 = new THREE.PointLight(0xFFD700, 0.6, 80); // Gold accent
+            accentLight1.position.set(25, 10, 0);
+            scene.add(accentLight1);
 
-            // Accent lights for color highlights
-            const warmAccent = new THREE.PointLight(0xFFD700, 0.5, 100);
-            warmAccent.position.set(20, 15, 20);
-            scene.add(warmAccent);
+            accentLight2 = new THREE.PointLight(0xE8E8E8, 0.5, 80); // Silver accent
+            accentLight2.position.set(-25, 10, 0);
+            scene.add(accentLight2);
+        }
 
-            const coolAccent = new THREE.PointLight(0xC0C0C0, 0.4, 100);
-            coolAccent.position.set(-20, 10, 15);
-            scene.add(coolAccent);
+        function updateLights(time) {
+            // Key and fill lights follow camera position for consistent illumination
+            const camPos = camera.position.clone().normalize();
+
+            keyLight.position.copy(camPos.clone().multiplyScalar(35));
+            keyLight.position.y = 20;
+
+            fillLight.position.copy(camPos.clone().multiplyScalar(-0.5));
+            fillLight.position.x -= 20;
+            fillLight.position.y = 15;
+            fillLight.position.z = 25;
+
+            // Rim light stays behind for edge definition
+            rimLight.position.set(0, 10, -20);
+
+            // Accent lights orbit slowly for dynamic sparkle
+            const orbitRadius = 28;
+            const orbitSpeed = 0.3;
+            accentLight1.position.x = Math.cos(time * orbitSpeed) * orbitRadius;
+            accentLight1.position.z = Math.sin(time * orbitSpeed) * orbitRadius;
+            accentLight1.position.y = 10 + Math.sin(time * 0.5) * 5;
+
+            accentLight2.position.x = Math.cos(time * orbitSpeed + Math.PI) * orbitRadius;
+            accentLight2.position.z = Math.sin(time * orbitSpeed + Math.PI) * orbitRadius;
+            accentLight2.position.y = 10 + Math.sin(time * 0.5 + Math.PI) * 5;
         }
 
         function create3DText() {
@@ -304,6 +337,9 @@
             }
 
             const time = Date.now() * 0.001;
+
+            // Always update lights for consistent illumination
+            updateLights(time);
 
             if (!isHovering) {
                 if (textMesh) {

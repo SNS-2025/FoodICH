@@ -1,4 +1,18 @@
-# Version 4 - Contemporary Heritage Fusion
+# Version 5 - Contemporary Heritage Fusion
+
+## 🚀 启动项目
+
+从项目根目录启动本地服务器（可访问所有版本）：
+
+```bash
+cd /Users/ke/Documents/GitProjects/FoodICH
+python3 -m http.server 8000
+```
+
+然后访问：
+- v5: http://localhost:8000/v5/
+- v4: http://localhost:8000/v4/
+- 其他版本同理
 
 ## 🎨 Design Overview
 
