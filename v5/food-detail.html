@@ -8,9 +8,230 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/detail.css">
+    <style>
+        body.detail-page {
+            min-height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #2b1d1d 0%, #0a0908 100%);
+            cursor: default;
+        }
+        
+        #shader-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        #scene-container {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        .detail-back-btn {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            z-index: 3000;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            padding: 10px 20px;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.74);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(16px);
+        }
+        
+        .detail-back-btn:hover {
+            transform: translateX(-4px);
+            border-color: rgba(255, 255, 255, 0.26);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        /* 信息面板 - 放在光环内边缘 */
+        .info-panel {
+            position: fixed;
+            z-index: 100;
+            width: 320px;
+            padding: 24px;
+            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
+                        linear-gradient(180deg, rgba(35, 27, 23, 0.9), rgba(18, 14, 12, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.48);
+            backdrop-filter: blur(32px);
+            pointer-events: auto;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.5s ease;
+        }
+        
+        .info-panel.visible {
+            opacity: 1;
+        }
+        
+        .info-panel h2 {
+            font-family: 'Libre Baskerville', Georgia, serif;
+            font-size: 1.8rem;
+            color: rgba(255, 250, 245, 0.95);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        
+        .info-panel .subtitle {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 16px;
+        }
+        
+        .info-panel .description {
+            font-size: 0.85rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.65);
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .info-panel .location {
+            margin-top: 16px;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        /* 材料注释弹窗 */
+        .material-note {
+            position: fixed;
+            z-index: 5000;
+            width: min(380px, calc(100vw - 40px));
+            padding: 18px 18px 16px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+                        rgba(17, 13, 12, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 28px 90px rgba(0, 0, 0, 0.62);
+            backdrop-filter: blur(26px);
+            opacity: 0;
+            visibility: hidden;
+            transform: translate3d(0, 10px, 0) scale(0.96);
+            transition: opacity 0.28s ease, transform 0.28s ease, visibility 0.28s linear;
+        }
+        
+        .material-note.is-visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+        
+        .material-note-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.76);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.24s ease;
+        }
+        
+        .material-note-close:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+        
+        .material-note-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.62rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+        
+        .material-note-side {
+            color: rgba(255, 255, 255, 0.64);
+        }
+        
+        .material-note-index {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .material-note h3 {
+            margin: 0 0 10px;
+            font-family: 'Libre Baskerville', Georgia, serif;
+            font-size: 1.18rem;
+            color: rgba(255, 250, 245, 0.96);
+            line-height: 1.2;
+        }
+        
+        .material-note p {
+            margin: 0;
+            font-size: 0.8rem;
+            line-height: 1.75;
+            color: rgba(255, 255, 255, 0.7);
+            white-space: pre-line;
+        }
+        
+        .legend-label {
+            position: fixed;
+            z-index: 100;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.45);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .legend-label.visible {
+            opacity: 1;
+        }
+        
+        .legend-label.reality {
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .legend-label.ai {
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
 </head>
 <body class="detail-page">
+    <!-- Navigation Menu -->
     <div class="hamburger-menu">
         <button class="hamburger-btn" onclick="toggleMenu()">
             <div class="hamburger-line"></div>
@@ -25,85 +246,38 @@
             <a href="https://instagram.com/futuretensehk" class="menu-item" target="_blank">Instagram</a>
         </div>
     </div>
-
+    
     <button class="detail-back-btn" onclick="history.back()">
         <span>←</span> Back
     </button>
-
-    <canvas id="detail-particle-canvas"></canvas>
-
-    <div class="detail-shell">
-        <!-- 右上角标题已隐藏 -->
-        <header class="detail-header" style="display: none;">
-            <div class="detail-kicker" id="detailKicker"></div>
-            <div class="detail-headline">
-                <div class="detail-title-group">
-                    <h1 class="detail-title-zh" id="titleCardZh"></h1>
-                    <p class="detail-title-en" id="titleCardEn"></p>
-                </div>
-            </div>
-        </header>
-
-        <section class="arc-installation" id="arcInstallation">
-            <!-- 环幕背景元素已隐藏 -->
-            <!-- <div class="arc-ambient arc-ambient-left"></div>
-            <div class="arc-ambient arc-ambient-right"></div> -->
-
-            <aside class="side-gallery side-gallery-left" id="realityColumn" aria-label="Reality materials">
-                <div class="side-legend side-legend-left">
-                    <span class="side-legend-label">REALITY</span>
-
-                </div>
-                <div class="arc-rim arc-rim-left" aria-hidden="true"></div>
-                <div class="arc-lane-track" id="realityTrack"></div>
-            </aside>
-
-            <main class="core-window" id="centerStage">
-                <div class="core-halo core-halo-outer" aria-hidden="true"></div>
-                <div class="core-halo core-halo-inner" aria-hidden="true"></div>
-
-                <section class="core-panel">
-                    <div class="core-panel-topline">
-                        <span class="core-badge" id="detailBadge"></span>
-                        <span class="core-location" id="detailLocation"></span>
-                    </div>
-
-                    <div class="core-model-wrap">
-                        <div class="model-stage" id="winModelStage">
-                            <div class="model-status" id="winModelStatus">Loading 3D model...</div>
-                        </div>
-                    </div>
-
-                    <div class="core-copy">
-                        <p class="core-summary" id="titleDesc"></p>
-                    </div>
-
-                    <div class="core-stats" id="detailInfo"></div>
-                </section>
-
-                <div class="core-window-mask" aria-hidden="true">
-                    <div class="core-window-aperture"></div>
-                </div>
-            </main>
-
-            <aside class="side-gallery side-gallery-right" id="aiColumn" aria-label="AI materials">
-                <div class="side-legend side-legend-right">
-                    <span class="side-legend-label">VARIATION</span>
-                </div>
-                <div class="arc-rim arc-rim-right" aria-hidden="true"></div>
-                <div class="arc-lane-track" id="aiTrack"></div>
-            </aside>
-        </section>
+    
+    <!-- Shader Background -->
+    <canvas id="shader-bg"></canvas>
+    
+    <!-- 3D Scene Container -->
+    <div id="scene-container"></div>
+    
+    <!-- Info Panel (positioned by JS) -->
+    <div class="info-panel" id="infoPanel">
+        <h2 id="dishTitle">Loading...</h2>
+        <div class="subtitle" id="dishSubtitle"></div>
+        <div class="description" id="dishDescription"></div>
+        <div class="location" id="dishLocation"></div>
     </div>
-
+    
+    <!-- Legend Labels -->
+    <div class="legend-label reality" id="legendReality">REALITY</div>
+    <div class="legend-label ai" id="legendAI">AI VISION</div>
+    
+    <!-- Material Note Popup -->
     <div class="material-note" id="materialNote" hidden>
-        <button class="material-note-close" id="materialNoteClose" aria-label="Close note">×</button>
+        <button class="material-note-close" id="materialNoteClose" aria-label="Close">×</button>
         <div class="material-note-meta">
             <span class="material-note-side" id="materialNoteSide"></span>
             <span class="material-note-index" id="materialNoteIndex"></span>
         </div>
-        <h3 class="material-note-title" id="materialNoteTitle"></h3>
-        <p class="material-note-body" id="materialNoteBody"></p>
+        <h3 id="materialNoteTitle"></h3>
+        <p id="materialNoteBody"></p>
     </div>
 
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
@@ -111,6 +285,5 @@
     <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/libs/fflate.min.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/detail.js"></script>
-</body>
-</html>
+    
+    <script>

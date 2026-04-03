@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Detail - What You See is What You Eat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/detail.css">
+</head>
+<body class="detail-page">
+    <div class="hamburger-menu">
+        <button class="hamburger-btn" onclick="toggleMenu()">
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+        </button>
+        <div class="menu-dropdown" id="menuDropdown">
+            <a href="index.html" class="menu-item">Home</a>
+            <a href="about.html" class="menu-item">Team</a>
+            <a href="exhibition.html" class="menu-item">Exhibition</a>
+            <a href="https://recfro.github.io/" class="menu-item" target="_blank">Studio</a>
+            <a href="https://instagram.com/futuretensehk" class="menu-item" target="_blank">Instagram</a>
+        </div>
+    </div>
+
+    <button class="detail-back-btn" onclick="history.back()">
+        <span>←</span> Back
+    </button>
+
+    <canvas id="detail-particle-canvas"></canvas>
+
+    <div class="detail-shell">
+        <!-- 右上角标题已隐藏 -->
+        <header class="detail-header" style="display: none;">
+            <div class="detail-kicker" id="detailKicker"></div>
+            <div class="detail-headline">
+                <div class="detail-title-group">
+                    <h1 class="detail-title-zh" id="titleCardZh"></h1>
+                    <p class="detail-title-en" id="titleCardEn"></p>
+                </div>
+            </div>
+        </header>
+
+        <section class="arc-installation" id="arcInstallation">
+            <!-- 环幕背景元素已隐藏 -->
+            <!-- <div class="arc-ambient arc-ambient-left"></div>
+            <div class="arc-ambient arc-ambient-right"></div> -->
+
+            <aside class="side-gallery side-gallery-left" id="realityColumn" aria-label="Reality materials">
+                <div class="side-legend side-legend-left">
+                    <span class="side-legend-label">REALITY</span>
+
+                </div>
+                <div class="arc-rim arc-rim-left" aria-hidden="true"></div>
+                <div class="arc-lane-track" id="realityTrack"></div>
+            </aside>
+
+            <main class="core-window" id="centerStage">
+                <div class="core-halo core-halo-outer" aria-hidden="true"></div>
+                <div class="core-halo core-halo-inner" aria-hidden="true"></div>
+
+                <section class="core-panel">
+                    <div class="core-panel-topline">
+                        <span class="core-badge" id="detailBadge"></span>
+                        <span class="core-location" id="detailLocation"></span>
+                    </div>
+
+                    <div class="core-model-wrap">
+                        <div class="model-stage" id="winModelStage">
+                            <div class="model-status" id="winModelStatus">Loading 3D model...</div>
+                        </div>
+                    </div>
+
+                    <div class="core-copy">
+                        <p class="core-summary" id="titleDesc"></p>
+                    </div>
+
+                    <div class="core-stats" id="detailInfo"></div>
+                </section>
+
+                <div class="core-window-mask" aria-hidden="true">
+                    <div class="core-window-aperture"></div>
+                </div>
+            </main>
+
+            <aside class="side-gallery side-gallery-right" id="aiColumn" aria-label="AI materials">
+                <div class="side-legend side-legend-right">
+                    <span class="side-legend-label">VARIATION</span>
+                </div>
+                <div class="arc-rim arc-rim-right" aria-hidden="true"></div>
+                <div class="arc-lane-track" id="aiTrack"></div>
+            </aside>
+        </section>
+    </div>
+
+    <div class="material-note" id="materialNote" hidden>
+        <button class="material-note-close" id="materialNoteClose" aria-label="Close note">×</button>
+        <div class="material-note-meta">
+            <span class="material-note-side" id="materialNoteSide"></span>
+            <span class="material-note-index" id="materialNoteIndex"></span>
+        </div>
+        <h3 class="material-note-title" id="materialNoteTitle"></h3>
+        <p class="material-note-body" id="materialNoteBody"></p>
+    </div>
+
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/libs/fflate.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/detail.js"></script>
+</body>
+</html>
