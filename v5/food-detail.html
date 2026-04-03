@@ -64,13 +64,13 @@
             color: #fff;
         }
         
-        /* 信息面板 - 放在光环内边缘 */
+        /* 信息面板 - 放在屏幕底部 */
         .info-panel {
             position: fixed;
             z-index: 100;
-            width: 320px;
-            padding: 24px;
-            border-radius: 24px;
+            width: min(400px, calc(100vw - 40px));
+            padding: 20px 24px;
+            border-radius: 20px;
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
                         linear-gradient(180deg, rgba(35, 27, 23, 0.9), rgba(18, 14, 12, 0.95));
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -78,42 +78,41 @@
             backdrop-filter: blur(32px);
             pointer-events: auto;
             opacity: 0;
-            transform: translate(-50%, -50%);
             transition: opacity 0.5s ease;
         }
-        
+
         .info-panel.visible {
             opacity: 1;
         }
-        
+
         .info-panel h2 {
             font-family: 'Libre Baskerville', Georgia, serif;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             color: rgba(255, 250, 245, 0.95);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             line-height: 1.2;
         }
-        
+
         .info-panel .subtitle {
             font-family: 'Sora', sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             letter-spacing: 0.2em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
         
         .info-panel .description {
-            font-size: 0.85rem;
-            line-height: 1.8;
+            font-size: 0.82rem;
+            line-height: 1.7;
             color: rgba(255, 255, 255, 0.65);
-            max-height: 150px;
+            max-height: 100px;
             overflow-y: auto;
         }
-        
+
         .info-panel .location {
-            margin-top: 16px;
-            font-size: 0.7rem;
+            margin-top: 12px;
+            font-size: 0.65rem;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.4);
@@ -581,27 +580,17 @@
             });
         }
         
-        // 显示信息面板 - 放在模型旁边
+        // 显示信息面板 - 放在屏幕底部中央
         function showInfoPanel(angle, radius) {
             const panel = document.getElementById('infoPanel');
-            
-            // 计算面板在屏幕上的位置
-            const panelAngle = angle + 0.3; // 稍微偏移一点
-            const panelRadius = radius - 2;
-            const panelX = Math.cos(panelAngle) * panelRadius;
-            const panelZ = Math.sin(panelAngle) * panelRadius;
-            
-            // 转换为屏幕坐标
-            const vector = new THREE.Vector3(panelX, 2, panelZ);
-            vector.project(camera);
-            
-            const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-            const y = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
-            
-            panel.style.left = x + 'px';
-            panel.style.top = y + 'px';
+
+            // 放在屏幕底部中央，不再挡住模型
+            panel.style.left = '50%';
+            panel.style.top = 'auto';
+            panel.style.bottom = '40px';
+            panel.style.transform = 'translateX(-50%)';
             panel.classList.add('visible');
-            
+
             // 显示图例标签
             document.getElementById('legendReality').classList.add('visible');
             document.getElementById('legendAI').classList.add('visible');
