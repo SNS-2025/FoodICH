@@ -99,13 +99,14 @@ function parseFoodMD(raw) {
         headings.push({
             index: match.index,
             titleZh: match[1].trim(),
-            titleEn: (match[2] || '').trim()
+            titleEn: (match[2] || '').trim(),
+            rawLength: match[0].length
         });
     }
 
     for (var i = 0; i < headings.length; i++) {
         var h = headings[i];
-        var start = h.index + match[0].length;
+        var start = h.index + h.rawLength;
         var end = i < headings.length - 1 ? headings[i + 1].index : text.length;
         var bodyText = text.slice(start, end).trim();
         var paragraphs = bodyText.split(/\n\n+/).map(function (p) { return p.trim(); }).filter(Boolean);
@@ -143,7 +144,7 @@ function getFoodMDDish(dishId) {
 document.addEventListener('DOMContentLoaded', function () {
     const dishId = getDishIdFromURL();
 
-    fetch('../food/food.MD')
+        fetch('../../food/food.MD')
         .then(function (response) { return response.text(); })
         .then(function (raw) {
             experienceState.foodMDData = parseFoodMD(raw);
