@@ -233,12 +233,12 @@
         function create3DText() {
             const loader = new THREE.FontLoader();
             loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', function(font) {
-                // v1 color scheme - Gold and White
+                // Silver and Gold - Studio lighting look
                 const textLines = [
-                    { text: 'WHAT YOU', color: 0xFFFFFF, height: 1 },
-                    { text: 'SEE', color: 0xCC9900, height: 4 },
-                    { text: 'IS WHAT YOU', color: 0xFFFFFF, height: 1 },
-                    { text: 'EAT', color: 0xCC9900, height: 4 }
+                    { text: 'WHAT YOU', color: 0xC0C0C0, height: 1, isSilver: true },
+                    { text: 'SEE', color: 0xCC9900, height: 4, isGold: true },
+                    { text: 'IS WHAT YOU', color: 0xC0C0C0, height: 1, isSilver: true },
+                    { text: 'EAT', color: 0xCC9900, height: 4, isGold: true }
                 ];
 
                 const textGroup = new THREE.Group();
@@ -246,11 +246,13 @@
                 const totalHeight = (textLines.length - 1) * lineHeight;
 
                 textLines.forEach((line, index) => {
-                    const material = new THREE.MeshPhongMaterial({
+                    const material = new THREE.MeshStandardMaterial({
                         color: line.color,
-                        shininess: 100,
+                        metalness: 0.9,
+                        roughness: line.isGold ? 0.2 : 0.15,
                         transparent: true,
-                        opacity: 0.85
+                        opacity: 0.85,
+                        envMapIntensity: 1.5
                     });
 
                     const textGeometry = new THREE.TextGeometry(line.text, {
