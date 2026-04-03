@@ -64,18 +64,18 @@
             color: #fff;
         }
         
-        /* 信息面板 - 放在屏幕底部 */
+        /* 信息面板 - 放在模型后面，挡住光环和图片 */
         .info-panel {
             position: fixed;
-            z-index: 100;
-            width: min(400px, calc(100vw - 40px));
-            padding: 20px 24px;
-            border-radius: 20px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
-                        linear-gradient(180deg, rgba(35, 27, 23, 0.9), rgba(18, 14, 12, 0.95));
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.48);
-            backdrop-filter: blur(32px);
+            z-index: 50;
+            width: min(500px, calc(100vw - 60px));
+            min-height: 320px;
+            padding: 24px 28px;
+            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(30, 24, 20, 0.95), rgba(18, 14, 12, 0.98));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(40px);
             pointer-events: auto;
             opacity: 0;
             transition: opacity 0.5s ease;
@@ -87,7 +87,7 @@
 
         .info-panel h2 {
             font-family: 'Libre Baskerville', Georgia, serif;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             color: rgba(255, 250, 245, 0.95);
             margin-bottom: 6px;
             line-height: 1.2;
@@ -101,12 +101,12 @@
             color: rgba(255, 255, 255, 0.5);
             margin-bottom: 12px;
         }
-        
+
         .info-panel .description {
             font-size: 0.82rem;
             line-height: 1.7;
             color: rgba(255, 255, 255, 0.65);
-            max-height: 100px;
+            max-height: 120px;
             overflow-y: auto;
         }
 
@@ -116,6 +116,17 @@
             letter-spacing: 0.15em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* 模型占位区域 */
+        .model-placeholder {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            pointer-events: none;
         }
         
         /* 材料注释弹窗 */
@@ -258,6 +269,8 @@
     
     <!-- Info Panel (positioned by JS) -->
     <div class="info-panel" id="infoPanel">
+        <!-- 模型占位区域 - 中间留空给3D模型显示 -->
+        <div class="model-placeholder"></div>
         <h2 id="dishTitle">Loading...</h2>
         <div class="subtitle" id="dishSubtitle"></div>
         <div class="description" id="dishDescription"></div>
@@ -544,35 +557,36 @@
         function loadFoodModel(dishId) {
             const loader = new THREE.FBXLoader();
             const modelPath = modelPaths[dishId];
-            
+
             if (!modelPath) return;
-            
+
             loader.load(modelPath, function(object) {
                 object.scale.setScalar(0.12);
-                
+
                 // 放在光环内边缘 (相机对面，约180度)
                 const angle = Math.PI; // 相机在0度，模型在180度对面
-                const modelRadius = RING_RADIUS - 4; // 稍微向内一点
+                const modelRadius = RING_RADIUS - 6; // 稍微向内一点
                 object.position.x = Math.cos(angle) * modelRadius;
                 object.position.z = Math.sin(angle) * modelRadius;
                 object.position.y = 0;
-                
+
+                // 面向摄像机：模型在180度，需要旋转180度面向0度的摄像机
                 object.rotation.x = Math.PI * 40 / 180;
-                object.rotation.y = Math.PI;
-                
+                object.rotation.y = 0; // 面向摄像机方向
+
                 object.castShadow = true;
                 object.receiveShadow = true;
-                
+
                 object.traverse(function(child) {
                     if (child.isMesh) {
                         child.castShadow = true;
                         child.receiveShadow = true;
                     }
                 });
-                
+
                 foodModel = object;
                 scene.add(object);
-                
+
                 // 显示信息面板
                 showInfoPanel(angle, modelRadius);
             }, undefined, function(error) {
@@ -580,15 +594,14 @@
             });
         }
         
-        // 显示信息面板 - 放在屏幕底部中央
+        // 显示信息面板 - 放在屏幕中央，模型后面
         function showInfoPanel(angle, radius) {
             const panel = document.getElementById('infoPanel');
 
-            // 放在屏幕底部中央，不再挡住模型
+            // 放在屏幕中央，食物模型会显示在面板前面
             panel.style.left = '50%';
-            panel.style.top = 'auto';
-            panel.style.bottom = '40px';
-            panel.style.transform = 'translateX(-50%)';
+            panel.style.top = '50%';
+            panel.style.transform = 'translate(-50%, -50%)';
             panel.classList.add('visible');
 
             // 显示图例标签

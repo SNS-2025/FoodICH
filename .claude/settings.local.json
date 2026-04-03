@@ -18,7 +18,10 @@
       "Bash(GIT_TRACE=1 GIT_CURL_VERBOSE=1 git push:*)",
       "Bash(ssh -T git@github.com)",
       "Bash(git checkout:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git rebase:*)",
+      "Bash(git stash:*)",
+      "Bash(GIT_SEQUENCE_EDITOR=\"sed -i '' '/fa12f72/d'\" git rebase -i 4acfe52)"
     ]
   }
 }
