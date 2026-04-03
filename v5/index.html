@@ -77,6 +77,7 @@
         let mouse = new THREE.Vector2();
         let hoveredModel = null;
         let isHovering = false;
+        let decorativeRings = []; // 装饰性光环
 
         // Model configuration with dish IDs for modal
         const modelConfig = [
@@ -116,6 +117,7 @@
             addLights();
             create3DText();
             loadFBXModels();
+            createDecorativeRings();
             // addParticles(); // Temporarily hidden
 
             animate();
@@ -300,6 +302,99 @@
             });
         }
 
+        // 创建装饰性光环 - 土星环效果
+        function createDecorativeRings() {
+            // 创建多个光环，围绕食物模型轨道
+            const ringConfigs = [
+                { radius: 28, tubeRadius: 0.08, opacity: 0.4, speed: 0.001, tilt: 0.15, color: 0xffffff },
+                { radius: 30, tubeRadius: 0.06, opacity: 0.3, speed: -0.0008, tilt: -0.1, color: 0xfff8e7 },
+                { radius: 32, tubeRadius: 0.05, opacity: 0.25, speed: 0.0006, tilt: 0.2, color: 0xffffff },
+                { radius: 34, tubeRadius: 0.04, opacity: 0.2, speed: -0.0005, tilt: -0.05, color: 0xfff0d0 }
+            ];
+
+            ringConfigs.forEach((config, index) => {
+                // 创建波浪形圆环 - 使用TubeGeometry沿着圆形路径
+                const segments = 200;
+                const points = [];
+
+                for (let i = 0; i <= segments; i++) {
+                    const angle = (i / segments) * Math.PI * 2;
+                    // 添加上下起伏的波动效果
+                    const waveOffset = Math.sin(angle * 8 + index) * 0.8 + Math.sin(angle * 12 + index * 2) * 0.4;
+                    const r = config.radius + waveOffset * 0.5;
+                    const x = Math.cos(angle) * r;
+                    const z = Math.sin(angle) * r;
+                    const y = waveOffset;
+                    points.push(new THREE.Vector3(x, y, z));
+                }
+
+                const curve = new THREE.CatmullRomCurve3(points, true);
+                const tubeGeometry = new THREE.TubeGeometry(curve, 400, config.tubeRadius, 8, true);
+
+                // 发光材质 - 浅白色半透明
+                const ringMaterial = new THREE.MeshBasicMaterial({
+                    color: config.color,
+                    transparent: true,
+                    opacity: config.opacity,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending
+                });
+
+                const ring = new THREE.Mesh(tubeGeometry, ringMaterial);
+                ring.rotation.x = config.tilt;
+                ring.userData = { rotationSpeed: config.speed, baseY: 0 };
+
+                scene.add(ring);
+                decorativeRings.push(ring);
+            });
+
+            // 添加额外的粒子光环效果
+            createParticleRing(29, 150, 0.35, 0.0007);
+            createParticleRing(31, 120, 0.3, -0.0006);
+            createParticleRing(33, 100, 0.25, 0.0005);
+        }
+
+        // 创建粒子组成的光环
+        function createParticleRing(radius, particleCount, opacity, speed) {
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (i / particleCount) * Math.PI * 2;
+                // 添加随机起伏
+                const waveY = (Math.random() - 0.5) * 2;
+                const radiusVariation = radius + (Math.random() - 0.5) * 1.5;
+
+                positions[i * 3] = Math.cos(angle) * radiusVariation;
+                positions[i * 3 + 1] = waveY;
+                positions[i * 3 + 2] = Math.sin(angle) * radiusVariation;
+
+                // 浅白/淡金色粒子
+                const colorVariation = 0.9 + Math.random() * 0.1;
+                colors[i * 3] = colorVariation;
+                colors[i * 3 + 1] = colorVariation * 0.95;
+                colors[i * 3 + 2] = colorVariation * 0.8;
+            }
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.3,
+                vertexColors: true,
+                transparent: true,
+                opacity: opacity,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            const particleRing = new THREE.Points(geometry, material);
+            particleRing.userData = { rotationSpeed: speed };
+            scene.add(particleRing);
+            decorativeRings.push(particleRing);
+        }
+
         function addParticles() {
             const particleCount = 800;
             const particles = new THREE.BufferGeometry();
@@ -340,6 +435,17 @@
 
             // Always update lights for consistent illumination
             updateLights(time);
+
+            // 更新装饰性光环旋转
+            decorativeRings.forEach((ring) => {
+                if (ring.userData.rotationSpeed) {
+                    ring.rotation.y += ring.userData.rotationSpeed;
+                    // 添加轻微的上下浮动
+                    if (ring.position) {
+                        ring.position.y = Math.sin(time * 0.3) * 0.5;
+                    }
+                }
+            });
 
             if (!isHovering) {
                 if (textMesh) {
