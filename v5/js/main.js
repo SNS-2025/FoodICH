@@ -43,18 +43,18 @@ function createTextCanvas(text, options) {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     const fontSize = settings.fontSize || 160;
-    const fontFamily = settings.fontFamily || 'Arial Black, Arial, sans-serif';
+    const fontFamily = settings.fontFamily || 'Sora, Arial, sans-serif';
     const paddingX = settings.paddingX || 80;
     const paddingY = settings.paddingY || 56;
 
-    context.font = `700 ${fontSize}px ${fontFamily}`;
+    context.font = `500 ${fontSize}px ${fontFamily}`;
     const metrics = context.measureText(text);
     canvas.width = Math.max(256, Math.ceil(metrics.width + paddingX * 2));
     canvas.height = Math.max(128, Math.ceil(fontSize + paddingY * 2));
 
     const renderContext = canvas.getContext('2d');
     renderContext.clearRect(0, 0, canvas.width, canvas.height);
-    renderContext.font = `700 ${fontSize}px ${fontFamily}`;
+    renderContext.font = `500 ${fontSize}px ${fontFamily}`;
     renderContext.textAlign = 'center';
     renderContext.textBaseline = 'middle';
     renderContext.fillStyle = settings.color || '#ffffff';

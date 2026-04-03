@@ -146,6 +146,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/FontLoader.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/libs/fflate.min.js"></script>
     <script src="js/main.js"></script>
@@ -230,19 +231,56 @@
         }
 
         function create3DText() {
-            if (typeof window.createLayeredTextGroup !== 'function') return;
+            const loader = new THREE.FontLoader();
+            loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+                // Food-themed colors from v2
+                const textLines = [
+                    { text: 'WHAT YOU', color: 0xFF6347, height: 1 },    // Tomato Red
+                    { text: 'SEE', color: 0x568203, height: 4 },         // Avocado Green
+                    { text: 'IS WHAT YOU', color: 0xD2691E, height: 1 }, // Chocolate Brown
+                    { text: 'EAT', color: 0xF5DEB3, height: 4 }          // Wheat
+                ];
 
-            const textGroup = window.createLayeredTextGroup([
-                { text: 'WHAT YOU', color: '#FF6347', height: 2.2, fontSize: 180 },
-                { text: 'SEE', color: '#568203', height: 4.6, fontSize: 280 },
-                { text: 'IS WHAT YOU', color: '#D2691E', height: 2.2, fontSize: 170 },
-                { text: 'EAT', color: '#F5DEB3', height: 4.6, fontSize: 280 }
-            ], {
-                lineSpacing: 4.2
+                const textGroup = new THREE.Group();
+                const lineHeight = 4;
+                const totalHeight = (textLines.length - 1) * lineHeight;
+
+                textLines.forEach((line, index) => {
+                    const material = new THREE.MeshPhongMaterial({
+                        color: line.color,
+                        shininess: 80,
+                        transparent: true,
+                        opacity: 0.95
+                    });
+
+                    const textGeometry = new THREE.TextGeometry(line.text, {
+                        font: font,
+                        size: 3,
+                        height: line.height,
+                        curveSegments: 12,
+                        bevelEnabled: true,
+                        bevelThickness: 0.1,
+                        bevelSize: 0.1,
+                        bevelSegments: 5
+                    });
+
+                    textGeometry.computeBoundingBox();
+                    const box = textGeometry.boundingBox;
+                    const centerOffsetX = -0.5 * (box.max.x - box.min.x);
+                    const centerOffsetZ = -0.5 * (box.max.z - box.min.z);
+                    textGeometry.translate(centerOffsetX, 0, centerOffsetZ);
+
+                    const mesh = new THREE.Mesh(textGeometry, material);
+                    mesh.position.y = (totalHeight / 2) - (index * lineHeight);
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+
+                    textGroup.add(mesh);
+                });
+
+                scene.add(textGroup);
+                textMesh = textGroup;
             });
-
-            scene.add(textGroup);
-            textMesh = textGroup;
         }
 
         function loadFBXModels() {

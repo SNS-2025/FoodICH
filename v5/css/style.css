@@ -435,8 +435,9 @@ p {
 }
 
 .member-info h3 {
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
     font-size: 1.5rem;
+    font-weight: 500;
     margin-bottom: var(--space-sm);
     color: var(--text-primary);
 }
