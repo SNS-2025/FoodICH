@@ -305,11 +305,15 @@
         // 创建装饰性光环 - 土星环效果
         function createDecorativeRings() {
             // 创建多个光环，围绕食物模型轨道
+            // 外层光环（围绕食物轨道）
+            // 内层光环（直径缩小一半，围绕中心文字）
             const ringConfigs = [
+                // 外层光环
                 { radius: 28, tubeRadius: 0.08, opacity: 0.4, speed: 0.001, tilt: 0.15, color: 0xffffff },
-                { radius: 30, tubeRadius: 0.06, opacity: 0.3, speed: -0.0008, tilt: -0.1, color: 0xfff8e7 },
                 { radius: 32, tubeRadius: 0.05, opacity: 0.25, speed: 0.0006, tilt: 0.2, color: 0xffffff },
-                { radius: 34, tubeRadius: 0.04, opacity: 0.2, speed: -0.0005, tilt: -0.05, color: 0xfff0d0 }
+                // 内层光环（直径约15-17）
+                { radius: 15, tubeRadius: 0.06, opacity: 0.35, speed: -0.0012, tilt: -0.2, color: 0xfff8e7 },
+                { radius: 17, tubeRadius: 0.04, opacity: 0.2, speed: -0.0008, tilt: 0.1, color: 0xfff0d0 }
             ];
 
             ringConfigs.forEach((config, index) => {
@@ -349,9 +353,11 @@
             });
 
             // 添加额外的粒子光环效果
+            // 外层粒子光环
             createParticleRing(29, 150, 0.35, 0.0007);
-            createParticleRing(31, 120, 0.3, -0.0006);
             createParticleRing(33, 100, 0.25, 0.0005);
+            // 内层粒子光环（直径缩小）
+            createParticleRing(16, 80, 0.3, -0.0009);
         }
 
         // 创建粒子组成的光环
