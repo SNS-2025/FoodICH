@@ -153,11 +153,11 @@
 
             // Load Font and Create Text
             const loader = new THREE.FontLoader();
-            loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+            loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', function(font) {
                 const textLines = [
-                    { text: 'WYS', color: 0xFF6347, height: 0.3, size: 1.5 },
-                    { text: 'is', color: 0x568203, height: 0.3, size: 0.8 },
-                    { text: 'WYE', color: 0xF5DEB3, height: 0.3, size: 1.5 }
+                    { text: 'WYS', color: 0xFFFFFF, height: 0.3, size: 1.5 },
+                    { text: 'is', color: 0xCC9900, height: 0.25, size: 0.8 },
+                    { text: 'WYE', color: 0xCC9900, height: 0.3, size: 1.5 }
                 ];
 
                 const textGroup = new THREE.Group();
@@ -167,16 +167,16 @@
                 textLines.forEach((line, index) => {
                     const material = new THREE.MeshPhongMaterial({
                         color: line.color,
-                        shininess: 80,
+                        shininess: 100,
                         transparent: true,
-                        opacity: 0.95
+                        opacity: 0.85
                     });
 
                     const textGeometry = new THREE.TextGeometry(line.text, {
                         font: font,
                         size: line.size,
                         height: line.height,
-                        curveSegments: 8,
+                        curveSegments: 12,
                         bevelEnabled: true,
                         bevelThickness: 0.05,
                         bevelSize: 0.05,

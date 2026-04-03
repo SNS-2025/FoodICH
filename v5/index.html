@@ -232,13 +232,13 @@
 
         function create3DText() {
             const loader = new THREE.FontLoader();
-            loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
-                // Food-themed colors from v2
+            loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', function(font) {
+                // v1 color scheme - Gold and White
                 const textLines = [
-                    { text: 'WHAT YOU', color: 0xFF6347, height: 1 },    // Tomato Red
-                    { text: 'SEE', color: 0x568203, height: 4 },         // Avocado Green
-                    { text: 'IS WHAT YOU', color: 0xD2691E, height: 1 }, // Chocolate Brown
-                    { text: 'EAT', color: 0xF5DEB3, height: 4 }          // Wheat
+                    { text: 'WHAT YOU', color: 0xFFFFFF, height: 1 },
+                    { text: 'SEE', color: 0xCC9900, height: 4 },
+                    { text: 'IS WHAT YOU', color: 0xFFFFFF, height: 1 },
+                    { text: 'EAT', color: 0xCC9900, height: 4 }
                 ];
 
                 const textGroup = new THREE.Group();
@@ -248,9 +248,9 @@
                 textLines.forEach((line, index) => {
                     const material = new THREE.MeshPhongMaterial({
                         color: line.color,
-                        shininess: 80,
+                        shininess: 100,
                         transparent: true,
-                        opacity: 0.95
+                        opacity: 0.85
                     });
 
                     const textGeometry = new THREE.TextGeometry(line.text, {
