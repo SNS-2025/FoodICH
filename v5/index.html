@@ -213,21 +213,37 @@
         }
 
         function addLights() {
-            const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+            // Studio lighting setup - three-point lighting
+            // Key light - main illumination from front-right
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.8);
+            keyLight.position.set(30, 40, 30);
+            keyLight.castShadow = true;
+            keyLight.shadow.mapSize.width = 2048;
+            keyLight.shadow.mapSize.height = 2048;
+            scene.add(keyLight);
+
+            // Fill light - softer light from left to reduce harsh shadows
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            fillLight.position.set(-30, 20, 20);
+            scene.add(fillLight);
+
+            // Rim/back light - creates edge highlight for depth
+            const rimLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            rimLight.position.set(0, 10, -30);
+            scene.add(rimLight);
+
+            // Ambient light - overall soft fill
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-            directionalLight.position.set(50, 50, 50);
-            directionalLight.castShadow = true;
-            scene.add(directionalLight);
+            // Accent lights for color highlights
+            const warmAccent = new THREE.PointLight(0xFFD700, 0.5, 100);
+            warmAccent.position.set(20, 15, 20);
+            scene.add(warmAccent);
 
-            const pointLight1 = new THREE.PointLight(0xff6b6b, 0.3, 100);
-            pointLight1.position.set(20, 20, 20);
-            scene.add(pointLight1);
-
-            const pointLight2 = new THREE.PointLight(0x4ecdc4, 0.3, 100);
-            pointLight2.position.set(-20, -20, 20);
-            scene.add(pointLight2);
+            const coolAccent = new THREE.PointLight(0xC0C0C0, 0.4, 100);
+            coolAccent.position.set(-20, 10, 15);
+            scene.add(coolAccent);
         }
 
         function create3DText() {
