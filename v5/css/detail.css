@@ -110,7 +110,7 @@ body.detail-page.is-paused .arc-module {
 .detail-title-zh {
     margin: 0;
     font-family: var(--font-serif);
-    font-size: clamp(2rem, 3.8vw, 4.4rem);
+    font-size: clamp(1.5rem, 3vw, 3.2rem);
     color: rgba(255, 250, 245, 0.95);
     line-height: 0.98;
     letter-spacing: -0.04em;
@@ -428,9 +428,9 @@ body.detail-page.is-paused .arc-module {
 
 .core-panel {
     position: relative;
-    width: min(100%, 470px);
-    padding: 22px 22px 18px;
-    border-radius: 32px;
+    width: min(100%, 420px);
+    padding: 18px 18px 14px;
+    border-radius: 28px;
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
         linear-gradient(180deg, rgba(35, 27, 23, 0.86), rgba(18, 14, 12, 0.9));

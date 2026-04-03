@@ -239,13 +239,12 @@ function getFileStem(filename) {
 }
 
 function populatePage(dish) {
-    setText('detailKicker', 'Reality / AI Continuum');
-    setText('detailNumber', dish.number || '');
+    setText('detailKicker', '');
+    setText('detailBadge', dish.title || '');
     setText('titleCardZh', dish.title || '');
     setText('titleCardEn', dish.subtitle || '');
     setText('detailLocation', dish.location || '');
     setText('titleDesc', buildSummary(dish.description || []));
-    renderInfoCards(dish);
 }
 
 function renderInfoCards(dish) {
