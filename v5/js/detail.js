@@ -82,33 +82,90 @@ const experienceState = {
     mdCache: new Map(),
     noteHideTimer: 0,
     particleLoop: null,
-    particleResize: null
+    particleResize: null,
+    foodMDData: null
 };
 
 let modelPreview = null;
 
-document.addEventListener('DOMContentLoaded', function () {
-    const dishId = getDishIdFromURL();
-    const dish = buildDishDetail(dishId);
+function parseFoodMD(raw) {
+    const text = String(raw || '');
+    const sections = [];
+    const headingPattern = /^#\s+(.+?)(?:\s+([\w\s&;]+))?\s*$/gm;
+    const headings = [];
+    let match;
 
-    if (!dish) {
-        renderMissingDish();
-        return;
+    while ((match = headingPattern.exec(text)) !== null) {
+        headings.push({
+            index: match.index,
+            titleZh: match[1].trim(),
+            titleEn: (match[2] || '').trim()
+        });
     }
 
-    experienceState.dishId = dishId;
-    experienceState.dish = dish;
+    for (var i = 0; i < headings.length; i++) {
+        var h = headings[i];
+        var start = h.index + match[0].length;
+        var end = i < headings.length - 1 ? headings[i + 1].index : text.length;
+        var bodyText = text.slice(start, end).trim();
+        var paragraphs = bodyText.split(/\n\n+/).map(function (p) { return p.trim(); }).filter(Boolean);
 
-    populatePage(dish);
-    bindGlobalInteractions();
-    buildArcTracks(dish);
-    initModelStage(dishId);
-    initDetailParticles();
-    startArcAnimation();
+        var dishId = resolveDishId(h.titleZh);
+        sections.push({
+            dishId: dishId,
+            title: h.titleZh,
+            subtitle: h.titleEn || '',
+            description: paragraphs
+        });
+    }
+
+    return sections;
+}
+
+function resolveDishId(titleZh) {
+    var map = {
+        '煲仔飯': 'claypot',
+        '客家釀豆腐': 'hakka-tofu',
+        '流汁湯包': 'steam-buns',
+        '瀏陽蒸排骨': 'healthy-ribs',
+        '小炒黃牛肉': 'stir-fried-beef',
+        '梅菜豬肉': 'preserved-veg-pork',
+        '粉絲蝦煲': 'vermicelli-shrimp'
+    };
+    return map[titleZh] || '';
+}
+
+function getFoodMDDish(dishId) {
+    if (!experienceState.foodMDData || !Array.isArray(experienceState.foodMDData)) return null;
+    return experienceState.foodMDData.find(function (d) { return d.dishId === dishId; }) || null;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const dishId = getDishIdFromURL();
+
+    fetch('../food/food.MD')
+        .then(function (response) { return response.text(); })
+        .then(function (raw) {
+            experienceState.foodMDData = parseFoodMD(raw);
+        })
+        .catch(function () { experienceState.foodMDData = null; })
+        .finally(function () {
+            const dish = buildDishDetail(dishId);
+            if (!dish) { renderMissingDish(); return; }
+            experienceState.dishId = dishId;
+            experienceState.dish = dish;
+            populatePage(dish);
+            bindGlobalInteractions();
+            buildArcTracks(dish);
+            initModelStage(dishId);
+            initDetailParticles();
+            startArcAnimation();
+        });
 });
 
 function buildDishDetail(dishId) {
     const manifest = detailAssetManifest[dishId];
+    const foodMDDish = getFoodMDDish(dishId);
     const baseMeta = (typeof dishData !== 'undefined' && dishData[dishId]) ? dishData[dishId] : fallbackDishMeta[dishId];
 
     if (!manifest && !baseMeta) {
@@ -119,6 +176,15 @@ function buildDishDetail(dishId) {
         ...(fallbackDishMeta[dishId] || {}),
         ...(baseMeta || {})
     };
+
+    // 优先从 food.MD 获取标题和描述
+    if (foodMDDish) {
+        if (foodMDDish.title) meta.title = foodMDDish.title;
+        if (foodMDDish.subtitle) meta.subtitle = foodMDDish.subtitle;
+        if (Array.isArray(foodMDDish.description) && foodMDDish.description.length) {
+            meta.description = foodMDDish.description;
+        }
+    }
 
     const realityItems = manifest
         ? createMaterialItems({
