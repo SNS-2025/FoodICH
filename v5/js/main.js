@@ -243,9 +243,9 @@ const dishAssets = {
         videoItems: createVideoItems('../food/hakka-tofu/video', ['VID20241215111124.mp4', 'VID20241215111137.mp4', 'cut_VID20241215110009.mp4', 'fry_VID20241215111725.mp4'], 'Hakka Tofu Video')
     },
     healthyRibs: {
-        displayItems: createImageItems('../food/healthy-ribs/AI', ['1.png', '2.png', '3.png', '4.png'], 'Liuyang Steamed Ribs AI'),
-        galleryItems: createImageItems('../food/healthy-ribs/Reality', ['1.png', '2.png', '3.jpg', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png'], 'Liuyang Steamed Ribs Reality'),
-        videoItems: createVideoItems('../food/healthy-ribs/video', ['videoplayback.mp4'], 'Liuyang Steamed Ribs Video')
+        displayItems: createImageItems('../food/LiuyangSteamedRibs/AI', ['1.png', '2.png', '3.png', '4.png'], 'Liuyang Steamed Ribs AI'),
+        galleryItems: createImageItems('../food/LiuyangSteamedRibs/Reality', ['1.png', '2.png', '3.jpg', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png'], 'Liuyang Steamed Ribs Reality'),
+        videoItems: createVideoItems('../food/LiuyangSteamedRibs/video', ['videoplayback.mp4'], 'Liuyang Steamed Ribs Video')
     },
     stirFriedBeef: {
         displayItems: createImageItems('../food/spicy-ribs/AI', ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png'], 'Stir-fried Yellow Beef AI'),

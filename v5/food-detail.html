@@ -80,11 +80,11 @@
         .info-panel {
             position: fixed;
             z-index: 80; /* 在光环层之上，模型层之下 */
-            width: min(320px, calc(100vw - 60px)); /* 缩小宽度 */
-            padding-top: 160px; /* 上方留空给模型 */
-            padding-bottom: 20px;
-            padding-left: 24px;
-            padding-right: 24px;
+            width: min(340px, calc(100vw - 60px));
+            padding-top: 200px; /* 上方留空给模型（增大） */
+            padding-bottom: 40px;
+            padding-left: 28px;
+            padding-right: 28px;
             border-radius: 20px;
             /* 更透明 + 强毛玻璃效果 */
             background: rgba(25, 20, 17, 0.65);
@@ -95,6 +95,8 @@
             pointer-events: auto;
             opacity: 0;
             transition: opacity 0.5s ease;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
         }
 
         .info-panel.visible {
@@ -120,9 +122,9 @@
 
         .info-panel .description {
             font-size: 0.82rem;
-            line-height: 1.7;
+            line-height: 1.75;
             color: rgba(255, 255, 255, 0.65);
-            max-height: 120px;
+            max-height: 400px;
             overflow-y: auto;
         }
 
@@ -137,11 +139,11 @@
         /* 模型占位区域 - 上方留空 */
         .model-placeholder {
             position: absolute;
-            top: 15px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 180px;
-            height: 140px;
+            width: 200px;
+            height: 170px;
             pointer-events: none;
         }
 
@@ -733,7 +735,7 @@
                 const modelRadius = RING_RADIUS - 18; // 往摄像机方向移动
                 object.position.x = Math.cos(angle) * modelRadius;
                 object.position.z = Math.sin(angle) * modelRadius;
-                object.position.y = 2; // 稍微抬高
+                object.position.y = 4; // 往上抬高
 
                 // 面向摄像机：模型在180度，需要旋转90度面向0度的摄像机
                 object.rotation.x = 0; // 清除之前的倾斜
@@ -870,6 +872,17 @@
             });
         }
         
+        // 食物介绍数据（来自 food.MD）
+        const dishDescriptions = {
+            'claypot': '煲仔飯的起源可以追溯到中國南方的農村地區。早在明清時期，廣東、福建等地的農民在勞動之餘，會將米、菜、肉等食材放入瓦煲中，用慢火燉煮，製作出美味的煲仔飯。這種烹調方式因簡單、便利、營養豐富而深受歡迎，逐漸流傳至香港。\n\n我們邀請到了嚐囍煲仔小菜的康哥，分享了他對煲仔飯的見解以及如何使用AI進行記錄變化與創新的過程。',
+            'hakka-tofu': '客家釀豆腐作為一道極具代表性的客家名菜，承載著深厚的歷史文化內涵，其起源與發展和客家人的遷徙歷程緊密相連。\n\n身為客家人，小李（化名）為我們展示了他們家庭製作客家釀豆腐的過程，並嘗試使用AI記錄了不同的偶然性，及根據AI的提示，創作了一道保留傳統味道的創新菜。\n\nAs a representative Hakka dish, Hakka Stuffed Tofu carries profound historical and cultural connotations. Its origin and development are closely linked to the migration of Hakka people.',
+            'steam-buns': '包子是一道歷史悠久的中國傳統美食，深受人們喜愛。最早可追溯至古代，因其方便攜帶且營養豐富，曾是勞工和旅人常食之物。隨著時間的推移，包子逐漸成為各地飲食文化中的重要組成部分，每個地區都發展出了獨特的餡料和風味。\n\n在英國，「包子」常被誤認為是台灣的荷葉包，一種夾著滷肉的折疊式蒸包。為了打破這個刻板印象，並向大眾推廣真正的中式包子，廚師包創立了包公包子品牌。\n\n我們很榮幸邀請到廚師王，與我們分享她對包子的見解，探討這一傳統美食的深厚文化底蘊及其在現代社會的演變。',
+            'healthy-ribs': '瀏陽蒸排骨是湖南瀏陽地區的一道經典家常菜，以蒸製手法保留了食材的原汁原味，搭配豆豉的鹹香與辣椒的微辣，形成了獨特的地方風味。這道菜的精髓在於「蒸」——不用大火爆炒，而是讓時間與蒸汽慢慢將味道滲入每一塊骨肉之中。\n\n我們邀請到了湘菜主廚張師傅，分享了他對瀏陽蒸排骨的理解，以及如何在保持傳統工藝的同時，用AI探索食材搭配的新可能。',
+            'stir-fried-beef': '小炒黃牛牛肉是湖南湘菜中的代表性菜品之一，以鮮嫩的黃牛肉搭配辣椒、蒜薹等佐料，用大火快炒而成，講究「鍋氣」——那種只有猛火與鐵鍋碰撞才能產生的獨特香氣。牛肉嫩滑、辣味鮮明、口感豐富，是湘菜館裡點單率最高的硬菜之一。\n\n我們邀請到了湘菜廚師劉師傅，分享了他對小炒黃牛肉火候掌控的心得，並嘗試用AI模擬不同炒制參數下的風味變化。',
+            'preserved-veg-pork': '梅菜豬肉又稱梅菜扣肉，是一道源自客家地區的經典名菜。精選五花豬肉經過煮、炸、蒸多道工序，肥而不膩、入口即化；搭配醃製已久的梅菜，其特有的鹹香與甘甜完美中和了肉的油潤，形成層次豐富的口感。這道菜承載著客家人勤儉持家的智慧——用醃製保存食材的方法，將平凡材料昇華為宴席佳餚。\n\n我們邀請到了客家料理傳承人陳阿姨，展示了她家傳的梅菜豬肉製作技法，並探索AI如何幫助記錄和傳承這門手藝。',
+            'vermicelli-shrimp': '粉絲蝦煲是粵式海鮮家常菜中的溫暖代表。吸滿蝦汁與高湯的粉絲滑嫩入味，彈牙的鮮蝦帶來海洋的清甜，金针菇與蔬菜增添了豐富的口感層次。整道菜在砂鍋中燜煮至滋滋作響，端上桌時仍熱氣騰騰，是家人團聚時最溫馨的滋味。\n\n我們邀請到了粵菜廚師何師傅，分享了他對粉絲蝦煲的烹飪秘訣，以及如何運用AI構思海鮮與粉絲的新穎搭配方式。'
+        };
+        
         // 更新页面信息
         function updatePageInfo(dishId) {
             const meta = dishMeta[dishId];
@@ -879,67 +892,13 @@
             document.getElementById('dishSubtitle').textContent = meta.subtitle;
             document.getElementById('dishLocation').textContent = meta.location;
             
-            // 尝试从 food.MD 加载描述
-            fetch('../../food/food.MD')
-                .then(response => response.text())
-                .then(raw => {
-                    const sections = parseFoodMD(raw);
-                    const dish = sections.find(s => s.dishId === dishId);
-                    if (dish && dish.description) {
-                        document.getElementById('dishDescription').textContent = 
-                            Array.isArray(dish.description) ? dish.description.join('\n\n') : dish.description;
-                    }
-                })
-                .catch(() => {});
-        }
-        
-        // 解析 food.MD
-        function parseFoodMD(raw) {
-            const text = String(raw || '');
-            const sections = [];
-            const headingPattern = /^#\s+(.+?)(?:\s+([\w\s&;]+))?\s*$/gm;
-            const headings = [];
-            let match;
-            
-            while ((match = headingPattern.exec(text)) !== null) {
-                headings.push({
-                    index: match.index,
-                    titleZh: match[1].trim(),
-                    titleEn: (match[2] || '').trim(),
-                    rawLength: match[0].length
-                });
+            // 从内嵌数据加载描述
+            const desc = dishDescriptions[dishId];
+            if (desc) {
+                document.getElementById('dishDescription').textContent = desc;
+            } else {
+                document.getElementById('dishDescription').textContent = '';
             }
-            
-            for (let i = 0; i < headings.length; i++) {
-                const h = headings[i];
-                const start = h.index + h.rawLength;
-                const end = i < headings.length - 1 ? headings[i + 1].index : text.length;
-                const bodyText = text.slice(start, end).trim();
-                const paragraphs = bodyText.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
-                
-                const dishId = resolveDishId(h.titleZh);
-                sections.push({
-                    dishId: dishId,
-                    title: h.titleZh,
-                    subtitle: h.titleEn || '',
-                    description: paragraphs
-                });
-            }
-            
-            return sections;
-        }
-        
-        function resolveDishId(titleZh) {
-            const map = {
-                '煲仔飯': 'claypot',
-                '客家釀豆腐': 'hakka-tofu',
-                '流汁湯包': 'steam-buns',
-                '瀏陽蒸排骨': 'healthy-ribs',
-                '小炒黃牛肉': 'stir-fried-beef',
-                '梅菜豬肉': 'preserved-veg-pork',
-                '粉絲蝦煲': 'vermicelli-shrimp'
-            };
-            return map[titleZh] || '';
         }
 
         // 点击画布检测卡片
@@ -1047,7 +1006,7 @@
 
             // 模型浮动
             if (foodModel) {
-                foodModel.position.y = 2 + Math.sin(time * 0.5) * 0.5;
+                foodModel.position.y = 4 + Math.sin(time * 0.5) * 0.5;
                 foodModel.rotation.y += 0.005;
             }
 
