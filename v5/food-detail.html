@@ -735,10 +735,10 @@
                 const modelRadius = RING_RADIUS - 18; // 往摄像机方向移动
                 object.position.x = Math.cos(angle) * modelRadius;
                 object.position.z = Math.sin(angle) * modelRadius;
-                object.position.y = ; // 往上抬高
+                object.position.y = 200 ; // 往上抬高
 
                 // 面向摄像机：模型在180度，需要旋转90度面向0度的摄像机
-                object.rotation.x = THREE.MathUtils.degToRad(30); // X轴向下倾斜30度
+                object.rotation.x = THREE.MathUtils.degToRad(30); // x轴向下倾斜30度
                 object.rotation.y = -Math.PI / 2; // 旋转90度面向摄像机
 
                 object.castShadow = true;
@@ -1006,7 +1006,7 @@
 
             // 模型浮动
             if (foodModel) {
-                foodModel.position.y = 4 + Math.sin(time * 0.5) * 0.5;
+                foodModel.position.y = 10 + Math.sin(time * 0.5) * 0.5;
                 foodModel.rotation.y += 0.005;
             }
 
