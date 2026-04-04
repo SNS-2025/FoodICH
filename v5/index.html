@@ -757,13 +757,13 @@
                 );
                 float f = fbm(p + 4.0 * r);
 
-                // Warmer, brighter palette
-                vec3 colorA = vec3(0.06, 0.04, 0.03);
-                vec3 colorB = vec3(0.25, 0.12, 0.06);
-                vec3 colorC = vec3(0.14, 0.06, 0.03);
-                vec3 colorD = vec3(0.35, 0.20, 0.08);
-                vec3 colorE = vec3(0.10, 0.14, 0.06);
-                vec3 colorF = vec3(0.30, 0.08, 0.12);
+                // Warmer, brighter palette - moderate brightness
+                vec3 colorA = vec3(0.09, 0.06, 0.045);
+                vec3 colorB = vec3(0.30, 0.15, 0.08);
+                vec3 colorC = vec3(0.18, 0.08, 0.045);
+                vec3 colorD = vec3(0.40, 0.24, 0.10);
+                vec3 colorE = vec3(0.14, 0.18, 0.08);
+                vec3 colorF = vec3(0.35, 0.10, 0.15);
 
                 vec3 color = mix(colorA, colorB, clamp(f * f * 2.0, 0.0, 1.0));
                 color = mix(color, colorC, clamp(length(q), 0.0, 1.0));
