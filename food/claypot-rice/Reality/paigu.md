@@ -1,0 +1,3 @@
+   以前成本較高，用的是急凍排骨，處理好之後和其他的差別不大，但其血水味還是存在。而新鮮食材的鮮味與質感，與急凍食材完全是兩個不同的概念。如果沒用新鮮食材，別人宣稱用的是新鮮食材，自己不標榜好壞，其實大家心裡都清楚，一吃就能分辨出來。
+
+In the past, due to high costs, we used frozen ribs. Although they were processed to be similar to other ingredients, the bloody smell still lingered. Fresh ingredients offer a completely different experience in terms of flavor and texture compared to frozen ones. If fresh ingredients aren’t used, but others claim to use them, it’s not about advertising. Everyone can tell the difference once they taste it.
