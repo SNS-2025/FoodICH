@@ -242,7 +242,7 @@ const dishAssets = {
         galleryItems: createImageItems('../food/hakka-tofu/Reality', ['73baa3575d77c954323cf25f93704f58aecbeb4b.jpg', '1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg', '6.jpg', '7.jpg', '8.jpg'], 'Hakka Tofu Reality'),
         videoItems: createVideoItems('../food/hakka-tofu/video', ['VID20241215111124.mp4', 'VID20241215111137.mp4', 'cut_VID20241215110009.mp4', 'fry_VID20241215111725.mp4'], 'Hakka Tofu Video')
     },
-    healthyRibs: {
+    liuyangSteamedRibs: {
         displayItems: createImageItems('../food/LiuyangSteamedRibs/AI', ['1.png', '2.png', '3.png', '4.png'], 'Liuyang Steamed Ribs AI'),
         galleryItems: createImageItems('../food/LiuyangSteamedRibs/Reality', ['1.png', '2.png', '3.jpg', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png'], 'Liuyang Steamed Ribs Reality'),
         videoItems: createVideoItems('../food/LiuyangSteamedRibs/video', ['videoplayback.mp4'], 'Liuyang Steamed Ribs Video')
@@ -322,12 +322,12 @@ const dishData = {
         ...dishAssets.hakkaTofu,
         mediaItems: mergeMediaGroups(dishAssets.hakkaTofu.galleryItems, dishAssets.hakkaTofu.videoItems, dishAssets.hakkaTofu.displayItems)
     },
-    'healthy-ribs': {
+    'liuyang-steamed-ribs': {
         number: '(04)',
         title: '瀏陽蒸排骨',
         subtitle: 'Liuyang Steamed Ribs',
         location: 'Liuyang · Hunan',
-        coverImage: dishAssets.healthyRibs.galleryItems[0].src,
+        coverImage: dishAssets.liuyangSteamedRibs.galleryItems[0].src,
         info: [
             { label: 'Origin', value: '湖南瀏陽蒸菜' },
             { label: 'Style', value: 'Steamed Savoury' },
@@ -338,8 +338,8 @@ const dishData = {
             '這道菜目前已接入首頁模型與統一詳情頁模板，可對應你已整理好的 AI 圖片與 Reality 圖集素材。',
             'Liuyang Steamed Ribs is now presented with the same unified detail-page layout, using the updated dish name and the existing local media assets.'
         ],
-        ...dishAssets.healthyRibs,
-        mediaItems: mergeMediaGroups(dishAssets.healthyRibs.galleryItems, dishAssets.healthyRibs.videoItems, dishAssets.healthyRibs.displayItems)
+        ...dishAssets.liuyangSteamedRibs,
+        mediaItems: mergeMediaGroups(dishAssets.liuyangSteamedRibs.galleryItems, dishAssets.liuyangSteamedRibs.videoItems, dishAssets.liuyangSteamedRibs.displayItems)
     },
     'stir-fried-beef': {
         number: '(05)',
