@@ -144,7 +144,103 @@
             height: 140px;
             pointer-events: none;
         }
-        
+
+        /* 卡片详情弹窗 - 与信息面板风格一致 */
+        .card-popup {
+            position: fixed;
+            z-index: 300;
+            width: min(340px, calc(100vw - 80px));
+            border-radius: 20px;
+            background: rgba(25, 20, 17, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(50px) saturate(1.2);
+            -webkit-backdrop-filter: blur(50px) saturate(1.2);
+            opacity: 0;
+            visibility: hidden;
+            transform: translate3d(0, 10px, 0) scale(0.95);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s linear;
+            pointer-events: auto;
+        }
+
+        .card-popup.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+
+        .card-popup-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.76);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.24s ease;
+            z-index: 10;
+        }
+
+        .card-popup-close:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
+        .card-popup-image {
+            width: 100%;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .card-popup-content {
+            padding: 16px 20px 20px;
+        }
+
+        .card-popup-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.62rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .card-popup-side {
+            color: rgba(255, 255, 255, 0.64);
+        }
+
+        .card-popup-index {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .card-popup h3 {
+            margin: 0 0 10px;
+            font-family: 'Libre Baskerville', Georgia, serif;
+            font-size: 1.1rem;
+            color: rgba(255, 250, 245, 0.96);
+            line-height: 1.2;
+        }
+
+        .card-popup p {
+            margin: 0;
+            font-size: 0.8rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.7);
+            white-space: pre-line;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
         /* 材料注释弹窗 */
         .material-note {
             position: fixed;
@@ -295,7 +391,21 @@
 
     <!-- Model Container (食物模型，在信息面板之上) -->
     <div id="model-container"></div>
-    
+
+    <!-- Card Popup (卡片详情弹窗) -->
+    <div class="card-popup" id="cardPopup">
+        <button class="card-popup-close" id="cardPopupClose" aria-label="Close">×</button>
+        <img class="card-popup-image" id="cardPopupImage" src="" alt="">
+        <div class="card-popup-content">
+            <div class="card-popup-meta">
+                <span class="card-popup-side" id="cardPopupSide"></span>
+                <span class="card-popup-index" id="cardPopupIndex"></span>
+            </div>
+            <h3 id="cardPopupTitle"></h3>
+            <p id="cardPopupBody">Loading...</p>
+        </div>
+    </div>
+
     <!-- Legend Labels -->
     <div class="legend-label reality" id="legendReality">REALITY</div>
     <div class="legend-label ai" id="legendAI">AI VISION</div>
@@ -332,6 +442,8 @@
         let aiCards = [];
         let animationId;
         let controls; // 轨道控制器
+        let raycaster, mouse; // 射线检测
+        let allCards = []; // 所有卡片
         
         // 光环半径 (首页内层光环约15-17，这里放大两倍约30-34)
         const RING_RADIUS = 32;
@@ -451,6 +563,10 @@
                 Math.sin(Math.PI) * (RING_RADIUS - 5)
             );
 
+            // 射线检测初始化
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
             // 添加灯光到主场景
             addLights(scene);
 
@@ -488,6 +604,10 @@
 
             // 事件监听
             window.addEventListener('resize', onWindowResize, false);
+            renderer.domElement.addEventListener('click', onCanvasClick, false);
+
+            // 弹窗关闭按钮
+            document.getElementById('cardPopupClose').addEventListener('click', closeCardPopup);
 
             // 初始化 Shader 背景
             initShaderBackground();
@@ -615,9 +735,9 @@
                 object.position.z = Math.sin(angle) * modelRadius;
                 object.position.y = 2; // 稍微抬高
 
-                // 面向摄像机
-                object.rotation.x = Math.PI * 40 / 180;
-                object.rotation.y = 0;
+                // 面向摄像机：模型在180度，需要旋转90度面向0度的摄像机
+                object.rotation.x = 0; // 清除之前的倾斜
+                object.rotation.y = -Math.PI / 2; // 旋转90度面向摄像机
 
                 object.castShadow = true;
                 object.receiveShadow = true;
@@ -675,46 +795,53 @@
         function createCardsOnRing(files, folder, side, startAngle, endAngle) {
             const angleRange = endAngle - startAngle;
             const angleStep = files.length > 1 ? angleRange / (files.length - 1) : 0;
-            
+
             files.forEach((filename, index) => {
                 const angle = startAngle + angleStep * index;
                 const radius = RING_RADIUS - 3;
-                
+
                 const isVideo = filename.endsWith('.mp4') || filename.endsWith('.mov');
-                const folderName = side === 'reality' ? 
+                const folderName = side === 'reality' ?
                     (isVideo ? 'video' : 'Reality') : 'AI';
-                
+
+                // 获取文件名（不含扩展名）用于加载对应的MD
+                const fileStem = filename.replace(/\.[^.]+$/, '');
+
                 const card = {
                     angle: angle,
                     radius: radius,
-                    height: (Math.random() - 0.5) * 4,
+                    // 上下错开更多：奇偶交错，幅度增大
+                    height: (index % 2 === 0 ? 4 : -4) + (index * 0.5),
                     // 速度：Reality从左到右(角度增加)，AI也从左到右(角度增加)
                     speed: 0.0008,
                     side: side,
                     type: isVideo ? 'video' : 'image',
                     src: `../food/${folder}/${folderName}/${filename}`,
+                    mdSrc: `../food/${folder}/${folderName}/${fileStem}.md`,
                     title: `${side === 'reality' ? 'Reality' : 'AI'} ${index + 1}`,
+                    filename: filename,
+                    fileStem: fileStem,
                     index: index
                 };
-                
+
                 if (side === 'reality') {
                     realityCards.push(card);
                 } else {
                     aiCards.push(card);
                 }
-                
+
                 // 创建3D卡片
                 createCardMesh(card);
             });
         }
-        
-        // 创建卡片网格
+
+        // 创建卡片网格 - 放大卡片
         function createCardMesh(card) {
-            // 创建卡片几何体
-            const cardWidth = 4;
-            const cardHeight = 3;
+            // 创建卡片几何体 - 放大
+            const cardWidth = 6;  // 原来4
+            const cardHeight = 4.5; // 原来3
             const geometry = new THREE.PlaneGeometry(cardWidth, cardHeight);
-            
+
             // 加载纹理
             const textureLoader = new THREE.TextureLoader();
             textureLoader.load(card.src, function(texture) {
@@ -724,21 +851,22 @@
                     opacity: 0.9,
                     side: THREE.DoubleSide
                 });
-                
+
                 const mesh = new THREE.Mesh(geometry, material);
-                
+
                 // 定位在光环上
                 mesh.position.x = Math.cos(card.angle) * card.radius;
                 mesh.position.z = Math.sin(card.angle) * card.radius;
                 mesh.position.y = card.height;
-                
+
                 // 面向中心
                 mesh.lookAt(0, card.height, 0);
-                
+
                 mesh.userData = card;
                 card.mesh = mesh;
-                
+
                 scene.add(mesh);
+                allCards.push(mesh); // 添加到全局卡片数组
             });
         }
         
@@ -813,7 +941,90 @@
             };
             return map[titleZh] || '';
         }
-        
+
+        // 点击画布检测卡片
+        function onCanvasClick(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(allCards);
+
+            if (intersects.length > 0) {
+                const clickedMesh = intersects[0].object;
+                const card = clickedMesh.userData;
+                showCardPopup(card, event.clientX, event.clientY);
+            }
+        }
+
+        // 显示卡片弹窗
+        function showCardPopup(card, clickX, clickY) {
+            const popup = document.getElementById('cardPopup');
+            const image = document.getElementById('cardPopupImage');
+            const sideEl = document.getElementById('cardPopupSide');
+            const indexEl = document.getElementById('cardPopupIndex');
+            const titleEl = document.getElementById('cardPopupTitle');
+            const bodyEl = document.getElementById('cardPopupBody');
+
+            // 设置图片
+            image.src = card.src;
+
+            // 设置元数据
+            sideEl.textContent = card.side === 'reality' ? 'REALITY' : 'AI VISION';
+            indexEl.textContent = card.fileStem || `#${card.index + 1}`;
+
+            // 设置标题
+            titleEl.textContent = card.title;
+
+            // 加载 MD 内容
+            bodyEl.textContent = 'Loading...';
+            if (card.mdSrc) {
+                fetch(card.mdSrc)
+                    .then(response => {
+                        if (!response.ok) throw new Error('MD not found');
+                        return response.text();
+                    })
+                    .then(text => {
+                        bodyEl.textContent = text || 'No description available.';
+                    })
+                    .catch(() => {
+                        bodyEl.textContent = card.side === 'reality'
+                            ? `${card.filename} - Real captured moment from the cooking process.`
+                            : `${card.filename} - AI generated variation exploring new possibilities.`;
+                    });
+            } else {
+                bodyEl.textContent = card.side === 'reality'
+                    ? `${card.filename} - Real captured moment from the cooking process.`
+                    : `${card.filename} - AI generated variation exploring new possibilities.`;
+            }
+
+            // 定位弹窗 - 在信息面板旁边
+            const infoPanel = document.getElementById('infoPanel');
+            const panelRect = infoPanel.getBoundingClientRect();
+
+            // 根据卡片位置决定弹窗显示在信息面板左边还是右边
+            const screenCenterX = window.innerWidth / 2;
+            if (clickX < screenCenterX) {
+                // 卡片在左边，弹窗显示在信息面板右边
+                popup.style.left = (panelRect.right + 20) + 'px';
+            } else {
+                // 卡片在右边，弹窗显示在信息面板左边
+                popup.style.left = (panelRect.left - 360) + 'px';
+            }
+
+            // 垂直居中
+            popup.style.top = '50%';
+            popup.style.transform = 'translateY(-50%)';
+
+            popup.classList.add('visible');
+        }
+
+        // 关闭卡片弹窗
+        function closeCardPopup() {
+            const popup = document.getElementById('cardPopup');
+            popup.classList.remove('visible');
+        }
+
         // 动画循环
         function animate() {
             animationId = requestAnimationFrame(animate);
