@@ -33,8 +33,19 @@
             position: fixed;
             top: 0;
             left: 0;
-            z-index: 100; /* 提高到信息面板之上 */
+            z-index: 10; /* 光环和图片卡片层 */
             pointer-events: auto;
+        }
+
+        /* 模型专用容器 - 在信息面板之上 */
+        #model-container {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 200; /* 模型层，在信息面板之上 */
+            pointer-events: none;
         }
         
         .detail-back-btn {
@@ -65,21 +76,22 @@
             color: #fff;
         }
         
-        /* 信息面板 - 纵向长方形，放在3D场景下层 */
+        /* 信息面板 - 纵向长方形，挡住光环和图片 */
         .info-panel {
             position: fixed;
-            z-index: 60; /* 在3D场景之下 */
+            z-index: 80; /* 在光环层之上，模型层之下 */
             width: min(320px, calc(100vw - 60px)); /* 缩小宽度 */
             padding-top: 160px; /* 上方留空给模型 */
             padding-bottom: 20px;
             padding-left: 24px;
             padding-right: 24px;
             border-radius: 20px;
-            /* 背景更透明，让上层的3D模型显示出来 */
-            background: linear-gradient(180deg, rgba(30, 24, 20, 0.85), rgba(18, 14, 12, 0.9));
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(40px);
+            /* 更透明 + 强毛玻璃效果 */
+            background: rgba(25, 20, 17, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(50px) saturate(1.2);
+            -webkit-backdrop-filter: blur(50px) saturate(1.2);
             pointer-events: auto;
             opacity: 0;
             transition: opacity 0.5s ease;
@@ -267,11 +279,11 @@
     
     <!-- Shader Background -->
     <canvas id="shader-bg"></canvas>
-    
-    <!-- 3D Scene Container -->
+
+    <!-- 3D Scene Container (光环 + 图片卡片) -->
     <div id="scene-container"></div>
-    
-    <!-- Info Panel (positioned by JS) -->
+
+    <!-- Info Panel (挡住光环和图片) -->
     <div class="info-panel" id="infoPanel">
         <!-- 模型占位区域 - 中间留空给3D模型显示 -->
         <div class="model-placeholder"></div>
@@ -280,6 +292,9 @@
         <div class="description" id="dishDescription"></div>
         <div class="location" id="dishLocation"></div>
     </div>
+
+    <!-- Model Container (食物模型，在信息面板之上) -->
+    <div id="model-container"></div>
     
     <!-- Legend Labels -->
     <div class="legend-label reality" id="legendReality">REALITY</div>
@@ -308,7 +323,8 @@
         // ============================================
         
         // 全局变量
-        let scene, camera, renderer;
+        let scene, camera, renderer; // 光环和图片卡片场景
+        let modelScene, modelRenderer; // 食物模型专用场景
         let foodModel = null;
         let decorativeRing = null;
         let decorativeParticles = null;
@@ -397,37 +413,33 @@
         
         // 初始化场景
         function init() {
+            // ========== 主场景（光环 + 图片卡片）==========
             const container = document.getElementById('scene-container');
 
-            // 创建场景
             scene = new THREE.Scene();
             scene.fog = new THREE.Fog(0x2a0808, 30, 150);
 
-            // 创建相机 - 放在光环内边缘，对着对面的食物模型
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            // 相机在光环的一侧内边缘 (角度为0度)
             const cameraAngle = 0;
-            const cameraRadius = RING_RADIUS - 5; // 在光环内边缘
+            const cameraRadius = RING_RADIUS - 5;
             camera.position.set(
                 Math.cos(cameraAngle) * cameraRadius,
-                3, // 眼睛高度
+                3,
                 Math.sin(cameraAngle) * cameraRadius
             );
-            // 相机看向对面的光环内边缘 (180度位置)
             camera.lookAt(
                 Math.cos(Math.PI) * (RING_RADIUS - 5),
                 0,
                 Math.sin(Math.PI) * (RING_RADIUS - 5)
             );
 
-            // 创建渲染器
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setClearColor(0x000000, 0);
             renderer.shadowMap.enabled = true;
             container.appendChild(renderer.domElement);
 
-            // 添加轨道控制器 - 允许鼠标控制摄像机
+            // 轨道控制器
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
@@ -439,18 +451,34 @@
                 Math.sin(Math.PI) * (RING_RADIUS - 5)
             );
 
-            // 添加灯光
-            addLights();
+            // 添加灯光到主场景
+            addLights(scene);
 
-            // 创建装饰性光环 (单层，直径变大两倍)
+            // 创建装饰性光环
             createDecorativeRing();
 
-            // 加载食物模型
+            // 创建图片卡片
             const dishId = getDishIdFromURL();
+            createImageCards(dishId);
+
+            // ========== 模型场景（食物模型，独立渲染层）==========
+            const modelContainer = document.getElementById('model-container');
+
+            modelScene = new THREE.Scene();
+
+            // 模型场景使用同一个相机
+            // 添加灯光到模型场景
+            addLights(modelScene);
+
+            // 加载食物模型
             loadFoodModel(dishId);
 
-            // 创建图片卡片
-            createImageCards(dishId);
+            // 模型渲染器
+            modelRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            modelRenderer.setSize(window.innerWidth, window.innerHeight);
+            modelRenderer.setClearColor(0x000000, 0);
+            modelRenderer.shadowMap.enabled = true;
+            modelContainer.appendChild(modelRenderer.domElement);
 
             // 更新页面信息
             updatePageInfo(dishId);
@@ -465,34 +493,34 @@
             initShaderBackground();
         }
         
-        function addLights() {
+        function addLights(targetScene) {
             // 环境光
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-            
+            targetScene.add(ambientLight);
+
             // 主光源 - 从相机位置照射
             const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
             keyLight.position.set(0, 10, 20);
-            scene.add(keyLight);
-            
+            targetScene.add(keyLight);
+
             // 补光
             const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
             fillLight.position.set(-15, 5, 10);
-            scene.add(fillLight);
-            
+            targetScene.add(fillLight);
+
             // 边缘光
             const rimLight = new THREE.DirectionalLight(0xffffff, 0.8);
             rimLight.position.set(0, 5, -20);
-            scene.add(rimLight);
-            
+            targetScene.add(rimLight);
+
             // 彩色点光源
             const accentLight1 = new THREE.PointLight(0xFFD700, 0.5, 60);
             accentLight1.position.set(20, 8, 0);
-            scene.add(accentLight1);
-            
+            targetScene.add(accentLight1);
+
             const accentLight2 = new THREE.PointLight(0xE8E8E8, 0.4, 60);
             accentLight2.position.set(-20, 8, 0);
-            scene.add(accentLight2);
+            targetScene.add(accentLight2);
         }
         
         // 创建装饰性光环 - 单层，直径变大两倍
@@ -570,7 +598,7 @@
             scene.add(decorativeParticles);
         }
         
-        // 加载食物模型 - 放在光环内边缘，往摄像机方向移动
+        // 加载食物模型 - 放在模型场景中
         function loadFoodModel(dishId) {
             const loader = new THREE.FBXLoader();
             const modelPath = modelPaths[dishId];
@@ -582,14 +610,14 @@
 
                 // 放在光环内边缘 (相机对面，约180度)
                 const angle = Math.PI; // 相机在0度，模型在180度对面
-                const modelRadius = RING_RADIUS - 18; // 往摄像机方向移动（原来-6）
+                const modelRadius = RING_RADIUS - 18; // 往摄像机方向移动
                 object.position.x = Math.cos(angle) * modelRadius;
                 object.position.z = Math.sin(angle) * modelRadius;
                 object.position.y = 2; // 稍微抬高
 
-                // 面向摄像机：模型在180度，需要旋转180度面向0度的摄像机
+                // 面向摄像机
                 object.rotation.x = Math.PI * 40 / 180;
-                object.rotation.y = 0; // 面向摄像机方向
+                object.rotation.y = 0;
 
                 object.castShadow = true;
                 object.receiveShadow = true;
@@ -602,7 +630,7 @@
                 });
 
                 foodModel = object;
-                scene.add(object);
+                modelScene.add(object); // 添加到模型场景
 
                 // 显示信息面板
                 showInfoPanel(angle, modelRadius);
@@ -816,8 +844,10 @@
             // 更新卡片位置 - 沿光环循环
             updateCards(realityCards, time);
             updateCards(aiCards, time);
-            
-            renderer.render(scene, camera);
+
+            // 渲染两个场景
+            renderer.render(scene, camera); // 光环和图片卡片
+            modelRenderer.render(modelScene, camera); // 食物模型
         }
         
         // 更新卡片 - 沿光环圆周移动
@@ -856,6 +886,7 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            modelRenderer.setSize(window.innerWidth, window.innerHeight);
         }
         
         // Shader 背景 (与首页相同)
