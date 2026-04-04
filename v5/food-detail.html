@@ -1002,13 +1002,12 @@
             const infoPanel = document.getElementById('infoPanel');
             const panelRect = infoPanel.getBoundingClientRect();
 
-            // 根据卡片位置决定弹窗显示在信息面板左边还是右边
-            const screenCenterX = window.innerWidth / 2;
-            if (clickX < screenCenterX) {
-                // 卡片在左边，弹窗显示在信息面板右边
+            // AI素材弹窗在右边，Reality素材弹窗在左边
+            if (card.side === 'ai') {
+                // AI弹窗显示在信息面板右边
                 popup.style.left = (panelRect.right + 20) + 'px';
             } else {
-                // 卡片在右边，弹窗显示在信息面板左边
+                // Reality弹窗显示在信息面板左边
                 popup.style.left = (panelRect.left - 360) + 'px';
             }
 
