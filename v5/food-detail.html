@@ -520,7 +520,7 @@
 
     <!-- Legend Labels -->
     <div class="legend-label reality" id="legendReality">REALITY</div>
-    <div class="legend-label ai" id="legendAI">AI VISION</div>
+    <div class="legend-label ai" id="legendAI">VARIATION</div>
     
     <!-- Material Note Popup -->
     <div class="material-note" id="materialNote" hidden>
@@ -555,6 +555,10 @@
         let controls; // 轨道控制器
         let raycaster, mouse; // 射线检测
         let allCards = []; // 所有卡片
+        
+        // AI卡片角度范围（动态计算）
+        let aiAngleStart = -Math.PI;
+        let aiAngleEnd = -Math.PI * 0.5;
         
         // 光环半径 (首页内层光环约15-17，这里放大两倍约30-34)
         const RING_RADIUS = 32;
@@ -961,8 +965,15 @@
             createCardsOnRing(realityFiles, manifest.folder, 'reality', Math.PI * 0.5, Math.PI);
 
             // AI 卡片 - 摄像机右边光环 (从左到右循环)
-            // 相机在0度看向180度，右边是 -90度 到 -180度 区域（靠近食物模型）
-            createCardsOnRing(aiFiles, manifest.folder, 'ai', -Math.PI, -Math.PI * 0.5);
+            // 根据AI图片数量动态调整角度范围，避免卡片过密
+            // 基准：6张图用90°范围，每多1张增加15°
+            const aiCount = aiFiles.length;
+            const baseRange = Math.PI * 0.5; // 90°
+            const extraRange = aiCount > 6 ? (aiCount - 6) * (Math.PI / 12) : 0; // 每多1张+15°
+            const totalRange = baseRange + extraRange;
+            aiAngleStart = -Math.PI - extraRange / 2;
+            aiAngleEnd = -Math.PI * 0.5 + extraRange / 2;
+            createCardsOnRing(aiFiles, manifest.folder, 'ai', aiAngleStart, aiAngleEnd);
         }
         
         // 在光环上创建卡片
@@ -1245,16 +1256,16 @@
                 // 更新角度
                 card.angle += card.speed;
 
-                // 循环：Reality在90°到180°之间，AI在-180°到-90°之间
+                // 循环范围：Reality和AI各自的范围
                 if (card.side === 'reality') {
-                    // Reality: 从90°移动到180°，超过则回到90°
+                    // Reality: 在90°到180°之间循环
                     if (card.angle > Math.PI) {
                         card.angle = Math.PI * 0.5;
                     }
                 } else {
-                    // AI: 从-180°移动到-90°，超过则回到-180°
-                    if (card.angle > -Math.PI * 0.5) {
-                        card.angle = -Math.PI;
+                    // AI: 在动态计算的角度范围内循环
+                    if (card.angle > aiAngleEnd) {
+                        card.angle = aiAngleStart;
                     }
                 }
 
