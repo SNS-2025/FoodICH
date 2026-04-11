@@ -203,18 +203,11 @@
         }
 
         .card-popup-content {
-            padding: 16px 20px 20px;
+            padding: 20px;
         }
 
         .card-popup-meta {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            font-family: 'Sora', sans-serif;
-            font-size: 0.62rem;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
+            display: none; /* 隐藏标题标签 */
         }
 
         .card-popup-side {
@@ -226,11 +219,7 @@
         }
 
         .card-popup h3 {
-            margin: 0 0 10px;
-            font-family: 'Libre Baskerville', Georgia, serif;
-            font-size: 1.1rem;
-            color: rgba(255, 250, 245, 0.96);
-            line-height: 1.2;
+            display: none; /* 隐藏标题 */
         }
 
         .card-popup p {
@@ -472,9 +461,9 @@
         const assetManifest = {
             'claypot': {
                 folder: 'claypot-rice',
-                reality: ['lachang.png', 'paigu.png', 'wodanniu.png'],
+                reality: ['rice-dry.png', '漏勺.png', '火山石.png', '人去转观察火力.png', '腊肠饭.png', '白饭.PNG'],
                 videos: ['VID20241112204313.mp4', 'VID20241112204653.mp4'],
-                ai: ['caihong.png', 'taiguo.png', 'xingkong.png']
+                ai: ['caihong.png', 'lachang.png', 'paigu.png', 'taiguo.png', 'wodanniu.png', 'xingkong.png']
             },
             'steam-buns': {
                 folder: 'steamed-buns',
@@ -735,11 +724,11 @@
                 const modelRadius = RING_RADIUS - 18; // 往摄像机方向移动
                 object.position.x = Math.cos(angle) * modelRadius;
                 object.position.z = Math.sin(angle) * modelRadius;
-                object.position.y = 6; // 往上抬高
+                object.position.y = 2; // 往下移动一点
 
-                // 面向摄像机：Y轴旋转90度，X轴向下倾斜30度
-                object.rotation.x = THREE.MathUtils.degToRad(30); // X轴向下倾斜30度
-                object.rotation.y = Math.PI / 2; // Y轴旋转90度面向摄像机
+                // 面向摄像机：正面朝向，轻微向下倾斜
+                object.rotation.x = THREE.MathUtils.degToRad(15); // X轴向下倾斜15度
+                object.rotation.y = Math.PI; // Y轴旋转180度正面面向摄像机
                 
 
                 object.castShadow = true;
@@ -1007,8 +996,8 @@
 
             // 模型浮动
             if (foodModel) {
-                foodModel.position.y = 10 + Math.sin(time * 0.5) * 0.5;
-                foodModel.rotation.y = Math.PI / 2; // Y轴旋转90度面向摄像机（固定角度）
+                foodModel.position.y = 2 + Math.sin(time * 0.5) * 0.5; // 保持较低位置浮动
+                foodModel.rotation.y = Math.PI; // 保持正面朝向
             }
 
             // 更新卡片位置 - 沿光环循环
