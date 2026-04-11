@@ -349,6 +349,102 @@
             top: 50%;
             transform: translateY(-50%);
         }
+
+        /* ====== 移动端竖屏适配 ====== */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .info-panel {
+                width: calc(100vw - 32px);
+                max-height: 45vh;
+                padding: 16px 16px 20px;
+                border-radius: 16px;
+            }
+
+            .info-panel .model-placeholder {
+                aspect-ratio: 1 / 1;
+                max-height: 28vh;
+                width: auto;
+                margin: 0 auto;
+            }
+
+            .info-panel .text-content {
+                max-height: none;
+                overflow-y: auto;
+            }
+
+            .info-panel h2 {
+                font-size: 1.15rem;
+                margin-bottom: 2px;
+            }
+
+            .info-panel .subtitle {
+                font-size: 0.58rem;
+                margin-bottom: 6px;
+            }
+
+            .info-panel .description {
+                font-size: 0.72rem;
+                line-height: 1.6;
+                max-height: 120px;
+            }
+
+            .info-panel .location {
+                margin-top: 6px;
+                font-size: 0.55rem;
+            }
+
+            /* 竖屏下卡片弹窗居中显示 */
+            .card-popup {
+                width: calc(100vw - 32px);
+                max-height: 70vh;
+                left: 50% !important;
+                top: auto !important;
+                bottom: 16px;
+                transform: translate3d(-50%, 0, 0) scale(0.95);
+            }
+
+            .card-popup.visible {
+                transform: translate3d(-50%, 0, 0) scale(1);
+            }
+
+            .card-popup-image {
+                aspect-ratio: 16/10;
+            }
+
+            .card-popup p {
+                max-height: 100px;
+                font-size: 0.72rem;
+            }
+
+            .card-popup-content {
+                padding: 14px;
+            }
+
+            /* 材料注释弹窗适配 */
+            .material-note {
+                width: calc(100vw - 32px);
+                left: 50% !important;
+                top: auto !important;
+                bottom: 16px;
+                transform: translate3d(-50%, 0, 0) scale(0.96);
+            }
+
+            .material-note.is-visible {
+                transform: translate3d(-50%, 0, 0) scale(1);
+            }
+
+            /* 图例标签隐藏或缩小 */
+            .legend-label {
+                display: none;
+            }
+
+            /* 返回按钮调整 */
+            .detail-back-btn {
+                top: 12px;
+                left: 12px;
+                padding: 8px 14px;
+                font-size: 0.7rem;
+            }
+        }
     </style>
 </head>
 <body class="detail-page">
@@ -752,7 +848,9 @@
             requestAnimationFrame(() => {
                 const w = displayContainer.clientWidth;
                 if (w > 0) {
-                    foodModelRenderer.setSize(w, w);
+                    const isPortrait = window.innerWidth <= 768 && window.innerHeight > window.innerWidth;
+                    const size = isPortrait ? Math.min(w, window.innerHeight * 0.25) : w;
+                    foodModelRenderer.setSize(size, size);
                 }
             });
 
@@ -827,9 +925,18 @@
         // 显示信息面板 - 放在屏幕中央
         function showInfoPanel() {
             const panel = document.getElementById('infoPanel');
-            panel.style.left = '50%';
-            panel.style.top = '50%';
-            panel.style.transform = 'translate(-50%, -50%)';
+            const isPortrait = window.innerWidth <= 768 && window.innerHeight > window.innerWidth;
+
+            if (isPortrait) {
+                // 竖屏：面板放在上方
+                panel.style.left = '50%';
+                panel.style.top = '16px';
+                panel.style.transform = 'translate(-50%, 0)';
+            } else {
+                panel.style.left = '50%';
+                panel.style.top = '50%';
+                panel.style.transform = 'translate(-50%, -50%)';
+            }
             panel.classList.add('visible');
 
             // 显示图例标签
@@ -1071,19 +1178,28 @@
                     : `${card.filename} - AI generated variation exploring new possibilities.`;
             }
 
-            // 定位弹窗 - 在信息面板旁边
-            const infoPanel = document.getElementById('infoPanel');
-            const panelRect = infoPanel.getBoundingClientRect();
+            // 定位弹窗
+            const isPortrait = window.innerWidth <= 768 && window.innerHeight > window.innerWidth;
 
-            if (card.side === 'ai') {
-                popup.style.left = (panelRect.right + 20) + 'px';
+            if (isPortrait) {
+                // 竖屏：CSS !important 控制居中底部定位，JS 不设置冲突的 inline style
+                popup.style.left = '';
+                popup.style.top = '';
+                popup.style.transform = '';
             } else {
-                popup.style.left = (panelRect.left - 360) + 'px';
-            }
+                // 横屏：在信息面板旁边
+                const infoPanel = document.getElementById('infoPanel');
+                const panelRect = infoPanel.getBoundingClientRect();
 
-            // 垂直居中
-            popup.style.top = '50%';
-            popup.style.transform = 'translateY(-50%)';
+                if (card.side === 'ai') {
+                    popup.style.left = (panelRect.right + 20) + 'px';
+                } else {
+                    popup.style.left = (panelRect.left - 360) + 'px';
+                }
+
+                popup.style.top = '50%';
+                popup.style.transform = 'translateY(-50%)';
+            }
 
             popup.classList.add('visible');
         }
@@ -1153,6 +1269,21 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // 竖屏/横屏切换时重新定位信息面板
+            const panel = document.getElementById('infoPanel');
+            if (panel) {
+                const isPortrait = window.innerWidth <= 768 && window.innerHeight > window.innerWidth;
+                if (isPortrait) {
+                    panel.style.left = '50%';
+                    panel.style.top = '16px';
+                    panel.style.transform = 'translate(-50%, 0)';
+                } else {
+                    panel.style.left = '50%';
+                    panel.style.top = '50%';
+                    panel.style.transform = 'translate(-50%, -50%)';
+                }
+            }
         }
         
         // Shader 背景 (与首页相同)
