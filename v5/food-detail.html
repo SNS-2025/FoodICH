@@ -1151,9 +1151,6 @@
             }
         }
 
-        // 页面加载时立即获取描述数据
-        loadDescriptions();
-        
         // 更新页面信息
         function updatePageInfo(dishId) {
             const meta = dishMeta[dishId];
@@ -1486,7 +1483,9 @@
         }
         
         // 材料注释交互
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 先加载描述数据，再初始化页面
+            await loadDescriptions();
             init();
             
             // 关闭注释按钮
