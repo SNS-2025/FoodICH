@@ -1,4 +1,8 @@
-星空漸層紫薯煲仔飯
+主廚亦曾思考運用更健康、更具創新的食材來製作煲仔飯。以下為主廚借助人工智慧所構思的創意食譜，嘗試在傳統風味與現代健康理念之間取得平衡。
+The chef has also contemplated using healthier and more innovative ingredients to create clay pot rice. Below are creative recipes envisioned by the chef with the assistance of artificial intelligence, aiming to strike a balance between traditional flavors and modern health-conscious principles.
+
+
+# 星空漸層紫薯煲仔飯
 Starry Sky Gradient Purple Potato Claypot Rice
 
 食材準備：
