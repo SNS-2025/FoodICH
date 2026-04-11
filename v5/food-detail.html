@@ -55,12 +55,17 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 250; /* 在info-panel(80)之上 */
-            pointer-events: none;
+            pointer-events: auto; /* 允许鼠标/触控交互 */
+            cursor: grab;
+        }
+
+        #food-model-display:active {
+            cursor: grabbing;
         }
 
         #food-model-display canvas {
-            width: 300px;
-            height: 300px;
+            width: 240px;
+            height: 240px;
         }
         
         .detail-back-btn {
@@ -96,7 +101,7 @@
             position: fixed;
             z-index: 80; /* 在光环层之上，模型层之下 */
             width: min(340px, calc(100vw - 60px));
-            padding-top: 200px; /* 上方留空给模型（增大） */
+            padding-top: 0;
             padding-bottom: 40px;
             padding-left: 28px;
             padding-right: 28px;
@@ -151,15 +156,12 @@
             color: rgba(255, 255, 255, 0.4);
         }
 
-        /* 模型占位区域 - 上方留空 */
+        /* 模型占位区域 - 上方留白给3D模型 */
         .model-placeholder {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 170px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
             pointer-events: none;
+            /* 不设背景色，纯留白 */
         }
 
         /* 卡片详情弹窗 - 与信息面板风格一致 */
@@ -710,7 +712,7 @@
             scene.add(decorativeParticles);
         }
         
-        // 加载食物模型 - 固定在屏幕中央
+        // 加载食物模型 - 固定在屏幕中央，支持交互旋转
         function loadFoodModelFixed(dishId) {
             const modelPath = modelPaths[dishId];
             if (!modelPath) {
@@ -719,6 +721,7 @@
             }
 
             const displayContainer = document.getElementById('food-model-display');
+            const modelSize = 240; // 与CSS canvas尺寸一致
 
             // 创建独立的场景、相机、渲染器
             foodModelScene = new THREE.Scene();
@@ -727,9 +730,20 @@
             foodModelCamera.lookAt(0, 0, 0);
 
             foodModelRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            foodModelRenderer.setSize(300, 300);
+            foodModelRenderer.setSize(modelSize, modelSize);
+            foodModelRenderer.setPixelRatio(window.devicePixelRatio);
             foodModelRenderer.setClearColor(0x000000, 0);
             displayContainer.appendChild(foodModelRenderer.domElement);
+
+            // 添加轨道控制器 - 支持鼠标/触控旋转
+            const modelControls = new THREE.OrbitControls(foodModelCamera, foodModelRenderer.domElement);
+            modelControls.enableDamping = true;
+            modelControls.dampingFactor = 0.08;
+            modelControls.enableZoom = false; // 禁止缩放
+            modelControls.enablePan = false;  // 禁止平移
+            modelControls.autoRotate = false; // 不自动旋转（由动画循环处理浮动）
+            // 保存引用以便动画循环中更新
+            window._modelControls = modelControls;
 
             // 添加灯光
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
@@ -746,7 +760,7 @@
             // 加载模型
             const loader = new THREE.FBXLoader();
             loader.load(modelPath, function(object) {
-                object.scale.setScalar(0.1);
+                object.scale.setScalar(0.08); // 缩小一点
                 object.position.set(0, 0, 0);
                 object.rotation.x = THREE.MathUtils.degToRad(15); // 轻微向下倾斜
 
@@ -776,11 +790,15 @@
 
             requestAnimationFrame(animateFoodModel);
 
-            // 模型轻微浮动
+            // 更新轨道控制器
+            if (window._modelControls) {
+                window._modelControls.update();
+            }
+
+            // 模型轻微浮动（不再自动旋转，由用户手动控制旋转）
             if (foodModel) {
                 const time = Date.now() * 0.001;
-                foodModel.position.y = Math.sin(time * 0.8) * 0.1;
-                foodModel.rotation.y = Math.sin(time * 0.3) * 0.1; // 轻微摇摆
+                foodModel.position.y = Math.sin(time * 0.8) * 0.08;
             }
 
             foodModelRenderer.render(foodModelScene, foodModelCamera);
@@ -864,7 +882,6 @@
         function createCardMesh(card) {
             const cardWidth = 6;
             const cardHeight = 4.5;
-            const cornerRadius = 0.4; // 圆角半径
 
             // 加载图片并添加圆角
             const img = new Image();
@@ -872,13 +889,16 @@
             img.onload = function() {
                 // 创建canvas绘制圆角图片
                 const canvas = document.createElement('canvas');
-                const w = 512; // 固定纹理尺寸
+                const w = 512;
                 const h = Math.round(w * cardHeight / cardWidth);
                 canvas.width = w;
                 canvas.height = h;
                 const ctx = canvas.getContext('2d');
 
-                // 绘制圆角矩形路径
+                // 先清空为透明
+                ctx.clearRect(0, 0, w, h);
+
+                // 绘制圆角矩形路径并裁剪
                 const r = 30; // canvas圆角像素
                 ctx.beginPath();
                 ctx.moveTo(r, 0);
@@ -893,33 +913,31 @@
                 ctx.closePath();
                 ctx.clip();
 
-                // 绘制图片
-                ctx.drawImage(img, 0, 0, w, h);
+                // 绘制图片 - 保持原始比例覆盖整个画布
+                const imgAspect = img.naturalWidth / img.naturalHeight;
+                const canvasAspect = w / h;
+                let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+                if (imgAspect > canvasAspect) {
+                    // 图片更宽，裁剪左右
+                    sw = img.naturalHeight * canvasAspect;
+                    sx = (img.naturalWidth - sw) / 2;
+                } else {
+                    // 图片更高，裁剪上下
+                    sh = img.naturalWidth / canvasAspect;
+                    sy = (img.naturalHeight - sh) / 2;
+                }
+                ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
 
                 // 创建纹理
                 const texture = new THREE.CanvasTexture(canvas);
                 texture.needsUpdate = true;
 
-                // 创建带圆角的几何体
-                const shape = new THREE.Shape();
-                const hw = cardWidth / 2;
-                const hh = cardHeight / 2;
-                shape.moveTo(-hw + cornerRadius, -hh);
-                shape.lineTo(hw - cornerRadius, -hh);
-                shape.quadraticCurveTo(hw, -hh, hw, -hh + cornerRadius);
-                shape.lineTo(hw, hh - cornerRadius);
-                shape.quadraticCurveTo(hw, hh, hw - cornerRadius, hh);
-                shape.lineTo(-hw + cornerRadius, hh);
-                shape.quadraticCurveTo(-hw, hh, -hw, hh - cornerRadius);
-                shape.lineTo(-hw, -hh + cornerRadius);
-                shape.quadraticCurveTo(-hw, -hh, -hw + cornerRadius, -hh);
-
-                const geometry = new THREE.ShapeGeometry(shape);
+                // 使用普通矩形平面，圆角由canvas纹理透明区域实现
+                const geometry = new THREE.PlaneGeometry(cardWidth, cardHeight);
 
                 const material = new THREE.MeshBasicMaterial({
                     map: texture,
                     transparent: true,
-                    opacity: 0.9,
                     side: THREE.DoubleSide
                 });
 
