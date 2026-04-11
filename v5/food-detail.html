@@ -349,37 +349,9 @@
             top: 50%;
             transform: translateY(-50%);
         }
-
-        /* 竖屏旋转提示横幅 */
-        .rotate-hint-banner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 9999;
-            padding: 8px 16px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(12px);
-            color: rgba(255, 255, 255, 0.85);
-            font-family: 'Sora', sans-serif;
-            font-size: 0.72rem;
-            letter-spacing: 0.06em;
-            text-align: center;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        .rotate-hint-banner.visible {
-            opacity: 1;
-        }
     </style>
 </head>
 <body class="detail-page">
-    <!-- 竖屏旋转提示 -->
-    <div class="rotate-hint-banner" id="rotateHintBanner">
-        ↻ Auto-rotated to landscape for best experience · 自動旋轉至橫屏以獲得最佳體驗
-    </div>
-
     <!-- Navigation Menu -->
     <div class="hamburger-menu">
         <button class="hamburger-btn" onclick="toggleMenu()">
@@ -1178,19 +1150,9 @@
         
         // 窗口大小变化
         function onWindowResize() {
-            // 旋转后使用 body 的实际尺寸（等同于用户看到的横屏尺寸）
-            var effectiveW, effectiveH;
-            if (document.body.style.transform && document.body.style.transform.indexOf('rotate') !== -1) {
-                // 旋转状态下：宽高已互换
-                effectiveW = parseInt(document.body.style.width) || window.innerHeight;
-                effectiveH = parseInt(document.body.style.height) || window.innerWidth;
-            } else {
-                effectiveW = window.innerWidth;
-                effectiveH = window.innerHeight;
-            }
-            camera.aspect = effectiveW / effectiveH;
+            camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(effectiveW, effectiveH);
+            renderer.setSize(window.innerWidth, window.innerHeight);
         }
         
         // Shader 背景 (与首页相同)
@@ -1339,60 +1301,6 @@
             requestAnimationFrame(render);
         }
         
-        // 竖屏自动旋转为横屏
-        (function() {
-            const body = document.body;
-            const banner = document.getElementById('rotateHintBanner');
-            let isRotated = false;
-            let hintTimer = null;
-
-            function checkOrientation() {
-                // 使用 screen.orientation API（如果可用）或尺寸判断
-                const isPortrait = window.innerHeight > window.innerWidth * 1.1;
-                if (isPortrait && !isRotated) {
-                    // 竖屏 → 旋转为横屏
-                    const w = window.innerWidth;
-                    const h = window.innerHeight;
-                    body.style.transform = 'rotate(90deg)';
-                    body.style.transformOrigin = 'center center';
-                    body.style.width = h + 'px';
-                    body.style.height = w + 'px';
-                    body.style.position = 'fixed';
-                    body.style.top = '0';
-                    body.style.left = (w - h) / 2 + 'px';
-                    body.style.overflow = 'hidden';
-                    isRotated = true;
-                    // 显示旋转提示
-                    if (banner) banner.classList.add('visible');
-                    clearTimeout(hintTimer);
-                    hintTimer = setTimeout(function() {
-                        if (banner) banner.classList.remove('visible');
-                    }, 3000);
-                    // 触发 resize 让 Three.js 等更新
-                    window.dispatchEvent(new Event('resize'));
-                } else if (!isPortrait && isRotated) {
-                    // 恢复正常
-                    body.style.transform = '';
-                    body.style.transformOrigin = '';
-                    body.style.width = '';
-                    body.style.height = '';
-                    body.style.position = '';
-                    body.style.top = '';
-                    body.style.left = '';
-                    body.style.overflow = '';
-                    isRotated = false;
-                    if (banner) banner.classList.remove('visible');
-                    window.dispatchEvent(new Event('resize'));
-                }
-            }
-
-            checkOrientation();
-            window.addEventListener('resize', checkOrientation);
-            window.addEventListener('orientationchange', function() {
-                setTimeout(checkOrientation, 300);
-            });
-        })();
-
         // 材料注释交互
         document.addEventListener('DOMContentLoaded', function() {
             init();
