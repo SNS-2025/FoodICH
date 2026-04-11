@@ -1,4 +1,8 @@
 #煲仔飯 CLAYPOT RICE
+
+康哥是香港嚐囍煲仔小菜的主廚，對煲仔飯有著深厚的經驗和見解。我們通過電話聯繫與親自拜訪，誠摯邀請他參與採訪，他欣然應允並分享了寶貴的烹飪心得。
+Brother Kang is the head chef at Chang Hei Claypot Rice in Hong Kong, with deep expertise and insights into claypot rice. Through phone calls and in-person visits, we sincerely invited him to participate in the interview. He graciously accepted and shared his valuable culinary insights.
+
 煲仔飯的起源可以追溯到中國南方的農村地區。早在明清時期，廣東、福建等地的農民在勞動之餘，會將米、菜、肉等食材放入瓦煲中，用慢火燉煮，製作出美味的煲仔飯。這種烹調方式因簡單、便利、營養豐富而深受歡迎，逐漸流傳至香港。
 我們邀請到了嚐囍煲仔小菜的康哥，分享了他對煲仔飯的見解以及如何使用AI進行記錄變化與創新的過程。
 
