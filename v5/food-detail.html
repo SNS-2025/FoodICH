@@ -37,36 +37,7 @@
             pointer-events: auto;
         }
 
-        /* 模型专用容器 - 在信息面板之上 */
-        #model-container {
-            width: 100vw;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 200; /* 模型层，在信息面板之上 */
-            pointer-events: none;
-        }
 
-        /* 食物模型固定在屏幕中央 */
-        #food-model-display {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 250; /* 在info-panel(80)之上 */
-            pointer-events: auto; /* 允许鼠标/触控交互 */
-            cursor: grab;
-        }
-
-        #food-model-display:active {
-            cursor: grabbing;
-        }
-
-        #food-model-display canvas {
-            width: 240px;
-            height: 240px;
-        }
         
         .detail-back-btn {
             position: fixed;
@@ -116,11 +87,16 @@
             opacity: 0;
             transition: opacity 0.5s ease;
             max-height: calc(100vh - 80px);
-            overflow-y: auto;
+            overflow: visible; /* 允许模型旋转时超出面板 */
         }
 
         .info-panel.visible {
             opacity: 1;
+        }
+
+        .info-panel .text-content {
+            max-height: calc(100vh - 80px - 340px); /* 减去模型占位高度 */
+            overflow-y: auto;
         }
 
         .info-panel h2 {
@@ -156,12 +132,27 @@
             color: rgba(255, 255, 255, 0.4);
         }
 
-        /* 模型占位区域 - 上方留白给3D模型 */
+        /* 模型占位区域 - 上方留白给3D模型，canvas直接放在这里 */
         .model-placeholder {
             width: 100%;
             aspect-ratio: 1 / 1;
-            pointer-events: none;
-            /* 不设背景色，纯留白 */
+            position: relative;
+            overflow: visible; /* 允许旋转时模型超出 */
+            pointer-events: auto;
+            cursor: grab;
+        }
+
+        .model-placeholder:active {
+            cursor: grabbing;
+        }
+
+        .model-placeholder canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         /* 卡片详情弹窗 - 与信息面板风格一致 */
@@ -391,17 +382,13 @@
     <div class="info-panel" id="infoPanel">
         <!-- 模型占位区域 - 中间留空给3D模型显示 -->
         <div class="model-placeholder"></div>
-        <h2 id="dishTitle">Loading...</h2>
-        <div class="subtitle" id="dishSubtitle"></div>
-        <div class="description" id="dishDescription"></div>
-        <div class="location" id="dishLocation"></div>
+        <div class="text-content">
+            <h2 id="dishTitle">Loading...</h2>
+            <div class="subtitle" id="dishSubtitle"></div>
+            <div class="description" id="dishDescription"></div>
+            <div class="location" id="dishLocation"></div>
+        </div>
     </div>
-
-    <!-- Model Container (食物模型，在信息面板之上) -->
-    <div id="model-container"></div>
-
-    <!-- 食物模型固定显示区域 -->
-    <div id="food-model-display"></div>
 
     <!-- Card Popup (卡片详情弹窗) -->
     <div class="card-popup" id="cardPopup">
@@ -712,7 +699,7 @@
             scene.add(decorativeParticles);
         }
         
-        // 加载食物模型 - 固定在屏幕中央，支持交互旋转
+        // 加载食物模型 - 直接放在info-panel的留白区域内
         function loadFoodModelFixed(dishId) {
             const modelPath = modelPaths[dishId];
             if (!modelPath) {
@@ -720,29 +707,36 @@
                 return;
             }
 
-            const displayContainer = document.getElementById('food-model-display');
-            const modelSize = 240; // 与CSS canvas尺寸一致
+            // 直接用 model-placeholder 作为容器
+            const displayContainer = document.getElementById('infoPanel').querySelector('.model-placeholder');
 
             // 创建独立的场景、相机、渲染器
             foodModelScene = new THREE.Scene();
-            foodModelCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-            foodModelCamera.position.set(0, 0, 5);
+            foodModelCamera = new THREE.PerspectiveCamera(35, 1, 0.1, 1000);
+            foodModelCamera.position.set(0, 0, 10);
             foodModelCamera.lookAt(0, 0, 0);
 
             foodModelRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            foodModelRenderer.setSize(modelSize, modelSize);
-            foodModelRenderer.setPixelRatio(window.devicePixelRatio);
+            foodModelRenderer.setSize(280, 280); // 初始尺寸，后面会调整
+            foodModelRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             foodModelRenderer.setClearColor(0x000000, 0);
             displayContainer.appendChild(foodModelRenderer.domElement);
+
+            // 面板显示后调整canvas尺寸
+            requestAnimationFrame(() => {
+                const w = displayContainer.clientWidth;
+                if (w > 0) {
+                    foodModelRenderer.setSize(w, w);
+                }
+            });
 
             // 添加轨道控制器 - 支持鼠标/触控旋转
             const modelControls = new THREE.OrbitControls(foodModelCamera, foodModelRenderer.domElement);
             modelControls.enableDamping = true;
             modelControls.dampingFactor = 0.08;
-            modelControls.enableZoom = false; // 禁止缩放
-            modelControls.enablePan = false;  // 禁止平移
-            modelControls.autoRotate = false; // 不自动旋转（由动画循环处理浮动）
-            // 保存引用以便动画循环中更新
+            modelControls.enableZoom = false;
+            modelControls.enablePan = false;
+            modelControls.autoRotate = false;
             window._modelControls = modelControls;
 
             // 添加灯光
@@ -760,9 +754,9 @@
             // 加载模型
             const loader = new THREE.FBXLoader();
             loader.load(modelPath, function(object) {
-                object.scale.setScalar(0.08); // 缩小一点
+                object.scale.setScalar(0.08);
                 object.position.set(0, 0, 0);
-                object.rotation.x = THREE.MathUtils.degToRad(15); // 轻微向下倾斜
+                object.rotation.x = THREE.MathUtils.degToRad(15);
 
                 object.traverse(function(child) {
                     if (child.isMesh) {
