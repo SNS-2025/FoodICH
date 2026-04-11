@@ -354,42 +354,46 @@
         @media (max-width: 768px) and (orientation: portrait) {
             .info-panel {
                 width: calc(100vw - 32px);
-                max-height: 45vh;
-                padding: 16px 16px 20px;
+                max-height: 48vh;
+                padding: 14px 14px 16px;
                 border-radius: 16px;
+                overflow-y: auto;
+                overflow-x: hidden;
             }
 
             .info-panel .model-placeholder {
                 aspect-ratio: 1 / 1;
-                max-height: 28vh;
+                max-height: 22vh;
                 width: auto;
                 margin: 0 auto;
+                overflow: hidden;
             }
 
             .info-panel .text-content {
                 max-height: none;
-                overflow-y: auto;
+                overflow: visible;
             }
 
             .info-panel h2 {
-                font-size: 1.15rem;
+                font-size: 1.1rem;
                 margin-bottom: 2px;
             }
 
             .info-panel .subtitle {
-                font-size: 0.58rem;
-                margin-bottom: 6px;
+                font-size: 0.55rem;
+                margin-bottom: 4px;
             }
 
             .info-panel .description {
-                font-size: 0.72rem;
-                line-height: 1.6;
-                max-height: 120px;
+                font-size: 0.68rem;
+                line-height: 1.55;
+                max-height: 80px;
+                overflow-y: auto;
             }
 
             .info-panel .location {
-                margin-top: 6px;
-                font-size: 0.55rem;
+                margin-top: 4px;
+                font-size: 0.52rem;
             }
 
             /* 竖屏下卡片弹窗居中显示 */
