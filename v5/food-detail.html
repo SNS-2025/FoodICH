@@ -390,17 +390,31 @@
         </div>
     </div>
 
-    <!-- Card Popup (卡片详情弹窗) -->
-    <div class="card-popup" id="cardPopup">
-        <button class="card-popup-close" id="cardPopupClose" aria-label="Close">×</button>
-        <img class="card-popup-image" id="cardPopupImage" src="" alt="">
+    <!-- Card Popup - Reality (左侧弹窗) -->
+    <div class="card-popup" id="cardPopupReality">
+        <button class="card-popup-close" aria-label="Close">×</button>
+        <img class="card-popup-image" src="" alt="">
         <div class="card-popup-content">
             <div class="card-popup-meta">
-                <span class="card-popup-side" id="cardPopupSide"></span>
-                <span class="card-popup-index" id="cardPopupIndex"></span>
+                <span class="card-popup-side"></span>
+                <span class="card-popup-index"></span>
             </div>
-            <h3 id="cardPopupTitle"></h3>
-            <p id="cardPopupBody">Loading...</p>
+            <h3></h3>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Card Popup - AI (右侧弹窗) -->
+    <div class="card-popup" id="cardPopupAI">
+        <button class="card-popup-close" aria-label="Close">×</button>
+        <img class="card-popup-image" src="" alt="">
+        <div class="card-popup-content">
+            <div class="card-popup-meta">
+                <span class="card-popup-side"></span>
+                <span class="card-popup-index"></span>
+            </div>
+            <h3></h3>
+            <p>Loading...</p>
         </div>
     </div>
 
@@ -588,7 +602,19 @@
             renderer.domElement.addEventListener('click', onCanvasClick, false);
 
             // 弹窗关闭按钮
-            document.getElementById('cardPopupClose').addEventListener('click', closeCardPopup);
+            document.querySelectorAll('.card-popup-close').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.closest('.card-popup').classList.remove('visible');
+                });
+            });
+
+            // 点击空白处关闭弹窗
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.card-popup') && !e.target.closest('.info-panel') && !e.target.closest('#scene-container')) {
+                    document.querySelectorAll('.card-popup.visible').forEach(p => p.classList.remove('visible'));
+                }
+            });
 
             // 初始化 Shader 背景
             initShaderBackground();
@@ -713,7 +739,7 @@
             // 创建独立的场景、相机、渲染器
             foodModelScene = new THREE.Scene();
             foodModelCamera = new THREE.PerspectiveCamera(35, 1, 0.1, 1000);
-            foodModelCamera.position.set(0, 0, 10);
+            foodModelCamera.position.set(0, 0, 12);
             foodModelCamera.lookAt(0, 0, 0);
 
             foodModelRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -754,7 +780,7 @@
             // 加载模型
             const loader = new THREE.FBXLoader();
             loader.load(modelPath, function(object) {
-                object.scale.setScalar(0.08);
+                object.scale.setScalar(0.05);
                 object.position.set(0, 0, 0);
                 object.rotation.x = THREE.MathUtils.degToRad(15);
 
@@ -998,17 +1024,20 @@
                 const clickedMesh = intersects[0].object;
                 const card = clickedMesh.userData;
                 showCardPopup(card, event.clientX, event.clientY);
+                // 阻止冒泡，避免触发document的点击关闭弹窗
+                event.stopPropagation();
             }
         }
 
-        // 显示卡片弹窗
+        // 显示卡片弹窗 - Reality和AI各自独立弹窗
         function showCardPopup(card, clickX, clickY) {
-            const popup = document.getElementById('cardPopup');
-            const image = document.getElementById('cardPopupImage');
-            const sideEl = document.getElementById('cardPopupSide');
-            const indexEl = document.getElementById('cardPopupIndex');
-            const titleEl = document.getElementById('cardPopupTitle');
-            const bodyEl = document.getElementById('cardPopupBody');
+            const popupId = card.side === 'ai' ? 'cardPopupAI' : 'cardPopupReality';
+            const popup = document.getElementById(popupId);
+            const image = popup.querySelector('.card-popup-image');
+            const sideEl = popup.querySelector('.card-popup-side');
+            const indexEl = popup.querySelector('.card-popup-index');
+            const titleEl = popup.querySelector('h3');
+            const bodyEl = popup.querySelector('p');
 
             // 设置图片
             image.src = card.src;
@@ -1046,12 +1075,9 @@
             const infoPanel = document.getElementById('infoPanel');
             const panelRect = infoPanel.getBoundingClientRect();
 
-            // AI素材弹窗在右边，Reality素材弹窗在左边
             if (card.side === 'ai') {
-                // AI弹窗显示在信息面板右边
                 popup.style.left = (panelRect.right + 20) + 'px';
             } else {
-                // Reality弹窗显示在信息面板左边
                 popup.style.left = (panelRect.left - 360) + 'px';
             }
 
@@ -1060,12 +1086,6 @@
             popup.style.transform = 'translateY(-50%)';
 
             popup.classList.add('visible');
-        }
-
-        // 关闭卡片弹窗
-        function closeCardPopup() {
-            const popup = document.getElementById('cardPopup');
-            popup.classList.remove('visible');
         }
 
         // 动画循环
