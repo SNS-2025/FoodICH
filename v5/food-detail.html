@@ -1105,16 +1105,54 @@
             img.src = card.src;
         }
         
-        // 食物介绍数据（来自 food.MD）
-        const dishDescriptions = {
-            'claypot': '煲仔飯的起源可以追溯到中國南方的農村地區。早在明清時期，廣東、福建等地的農民在勞動之餘，會將米、菜、肉等食材放入瓦煲中，用慢火燉煮，製作出美味的煲仔飯。這種烹調方式因簡單、便利、營養豐富而深受歡迎，逐漸流傳至香港。\n\n我們邀請到了嚐囍煲仔小菜的康哥，分享了他對煲仔飯的見解以及如何使用AI進行記錄變化與創新的過程。',
-            'hakka-tofu': '客家釀豆腐作為一道極具代表性的客家名菜，承載著深厚的歷史文化內涵，其起源與發展和客家人的遷徙歷程緊密相連。\n\n身為客家人，小李（化名）為我們展示了他們家庭製作客家釀豆腐的過程，並嘗試使用AI記錄了不同的偶然性，及根據AI的提示，創作了一道保留傳統味道的創新菜。\n\nAs a representative Hakka dish, Hakka Stuffed Tofu carries profound historical and cultural connotations. Its origin and development are closely linked to the migration of Hakka people.',
-            'steam-buns': '包子是一道歷史悠久的中國傳統美食，深受人們喜愛。最早可追溯至古代，因其方便攜帶且營養豐富，曾是勞工和旅人常食之物。隨著時間的推移，包子逐漸成為各地飲食文化中的重要組成部分，每個地區都發展出了獨特的餡料和風味。\n\n在英國，「包子」常被誤認為是台灣的荷葉包，一種夾著滷肉的折疊式蒸包。為了打破這個刻板印象，並向大眾推廣真正的中式包子，廚師包創立了包公包子品牌。\n\n我們很榮幸邀請到廚師王，與我們分享她對包子的見解，探討這一傳統美食的深厚文化底蘊及其在現代社會的演變。',
-            'liuyang-steamed-ribs': '瀏陽蒸排骨是湖南瀏陽地區的一道經典家常菜，以蒸製手法保留了食材的原汁原味，搭配豆豉的鹹香與辣椒的微辣，形成了獨特的地方風味。這道菜的精髓在於「蒸」——不用大火爆炒，而是讓時間與蒸汽慢慢將味道滲入每一塊骨肉之中。\n\n我們邀請到了湘菜主廚張師傅，分享了他對瀏陽蒸排骨的理解，以及如何在保持傳統工藝的同時，用AI探索食材搭配的新可能。',
-            'stir-fried-beef': '小炒黃牛牛肉是湖南湘菜中的代表性菜品之一，以鮮嫩的黃牛肉搭配辣椒、蒜薹等佐料，用大火快炒而成，講究「鍋氣」——那種只有猛火與鐵鍋碰撞才能產生的獨特香氣。牛肉嫩滑、辣味鮮明、口感豐富，是湘菜館裡點單率最高的硬菜之一。\n\n我們邀請到了湘菜廚師劉師傅，分享了他對小炒黃牛肉火候掌控的心得，並嘗試用AI模擬不同炒制參數下的風味變化。',
-            'preserved-veg-pork': '梅菜豬肉又稱梅菜扣肉，是一道源自客家地區的經典名菜。精選五花豬肉經過煮、炸、蒸多道工序，肥而不膩、入口即化；搭配醃製已久的梅菜，其特有的鹹香與甘甜完美中和了肉的油潤，形成層次豐富的口感。這道菜承載著客家人勤儉持家的智慧——用醃製保存食材的方法，將平凡材料昇華為宴席佳餚。\n\n我們邀請到了客家料理傳承人陳阿姨，展示了她家傳的梅菜豬肉製作技法，並探索AI如何幫助記錄和傳承這門手藝。',
-            'vermicelli-shrimp': '粉絲蝦煲是粵式海鮮家常菜中的溫暖代表。吸滿蝦汁與高湯的粉絲滑嫩入味，彈牙的鮮蝦帶來海洋的清甜，金针菇與蔬菜增添了豐富的口感層次。整道菜在砂鍋中燜煮至滋滋作響，端上桌時仍熱氣騰騰，是家人團聚時最溫馨的滋味。\n\n我們邀請到了粵菜廚師何師傅，分享了他對粉絲蝦煲的烹飪秘訣，以及如何運用AI構思海鮮與粉絲的新穎搭配方式。'
-        };
+        // 食物介绍数据（从 MD 文件加载）
+        let dishDescriptions = {};
+
+        // 解析 MD 文件，提取各菜品描述
+        function parseDescriptionsMD(mdContent) {
+            const descriptions = {};
+            const lines = mdContent.split('\n');
+            let currentId = null;
+            let currentContent = [];
+
+            for (const line of lines) {
+                // 匹配 ## dish-id 格式的标题
+                const match = line.match(/^##\s+(\S+)/);
+                if (match) {
+                    // 保存上一个 section
+                    if (currentId && currentContent.length > 0) {
+                        descriptions[currentId] = currentContent.join('\n').trim();
+                    }
+                    currentId = match[1];
+                    currentContent = [];
+                } else if (currentId) {
+                    // 跳过一级标题行
+                    if (!line.startsWith('# ')) {
+                        currentContent.push(line);
+                    }
+                }
+            }
+            // 保存最后一个 section
+            if (currentId && currentContent.length > 0) {
+                descriptions[currentId] = currentContent.join('\n').trim();
+            }
+            return descriptions;
+        }
+
+        // 加载描述数据
+        async function loadDescriptions() {
+            try {
+                const response = await fetch('../food/food.MD');
+                if (!response.ok) throw new Error('Failed to load descriptions');
+                const mdContent = await response.text();
+                dishDescriptions = parseDescriptionsMD(mdContent);
+            } catch (error) {
+                console.error('Error loading descriptions:', error);
+            }
+        }
+
+        // 页面加载时立即获取描述数据
+        loadDescriptions();
         
         // 更新页面信息
         function updatePageInfo(dishId) {
