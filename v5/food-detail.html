@@ -67,15 +67,19 @@
             color: #fff;
         }
         
-        /* 信息面板 - 纵向长方形，挡住光环和图片 */
+        /* 信息面板 - 固定比例，挡住光环和图片 */
         .info-panel {
             position: fixed;
             z-index: 80; /* 在光环层之上，模型层之下 */
-            width: min(340px, calc(100vw - 60px));
+            width: min(360px, calc(100vw - 60px), calc((100vh - 80px) * 0.72));
+            aspect-ratio: 5 / 7;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
             padding-top: 0;
-            padding-bottom: 40px;
-            padding-left: 28px;
-            padding-right: 28px;
+            padding-bottom: 22px;
+            padding-left: 24px;
+            padding-right: 24px;
             border-radius: 20px;
             /* 更透明 + 强毛玻璃效果 */
             background: rgba(25, 20, 17, 0.65);
@@ -87,7 +91,7 @@
             opacity: 0;
             transition: opacity 0.5s ease;
             max-height: calc(100vh - 80px);
-            overflow: visible; /* 允许模型旋转时超出面板 */
+            overflow: hidden;
         }
 
         .info-panel.visible {
@@ -95,15 +99,18 @@
         }
 
         .info-panel .text-content {
-            max-height: calc(100vh - 80px - 340px); /* 减去模型占位高度 */
-            overflow-y: auto;
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
         }
 
         .info-panel h2 {
             font-family: 'Libre Baskerville', Georgia, serif;
             font-size: 1.6rem;
             color: rgba(255, 250, 245, 0.95);
-            margin-bottom: 6px;
+            margin: 0 0 6px;
             line-height: 1.2;
         }
 
@@ -113,31 +120,130 @@
             letter-spacing: 0.2em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .info-panel .description {
-            font-size: 0.82rem;
-            line-height: 1.75;
-            color: rgba(255, 255, 255, 0.65);
-            max-height: 400px;
-            overflow-y: auto;
+            display: none;
         }
 
         .info-panel .location {
-            margin-top: 12px;
+            margin-top: 0;
             font-size: 0.65rem;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.4);
         }
 
+        .intro-actions {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 0;
+            margin-top: 22px;
+            height: 54px;
+        }
+
+        .intro-action-btn {
+            position: relative;
+            width: 72px;
+            height: 48px;
+            padding: 0;
+            border-radius: 4px 4px 18px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background:
+                linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.035) 58%),
+                linear-gradient(180deg, rgba(89, 60, 39, 0.38), rgba(32, 24, 19, 0.76));
+            color: rgba(255, 250, 245, 0.82);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                0 18px 34px rgba(0, 0, 0, 0.28),
+                inset 0 1px 0 rgba(255, 255, 255, 0.16),
+                inset 0 -18px 24px rgba(0, 0, 0, 0.16);
+            transform-origin: 50% 100%;
+            transition: transform 0.28s ease, background 0.28s ease, border-color 0.28s ease, color 0.28s ease, box-shadow 0.28s ease;
+            backdrop-filter: blur(20px) saturate(1.15);
+            -webkit-backdrop-filter: blur(20px) saturate(1.15);
+            isolation: isolate;
+        }
+
+        .intro-action-btn::before {
+            content: "";
+            position: absolute;
+            top: -7px;
+            left: 13px;
+            right: 13px;
+            height: 12px;
+            border-radius: 4px 4px 0 0;
+            background: rgba(255, 244, 226, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-bottom: 0;
+            z-index: -1;
+        }
+
+        .intro-action-btn::after {
+            content: "";
+            position: absolute;
+            inset: 8px 10px auto;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.36), transparent);
+            opacity: 0.8;
+        }
+
+        .intro-action-btn:hover {
+            transform: translateY(-4px) rotate(-1.5deg);
+            background:
+                linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.055) 60%),
+                linear-gradient(180deg, rgba(120, 76, 48, 0.48), rgba(38, 28, 21, 0.82));
+            border-color: rgba(255, 255, 255, 0.26);
+            color: #fff;
+            box-shadow:
+                0 22px 42px rgba(0, 0, 0, 0.38),
+                0 0 34px rgba(254, 202, 87, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .intro-action-btn[data-intro-type="chef"] {
+            margin-left: -10px;
+            transform: translateY(4px) rotate(3deg);
+            z-index: 1;
+        }
+
+        .intro-action-btn[data-intro-type="dish"] {
+            transform: rotate(-3deg);
+            z-index: 2;
+        }
+
+        .intro-action-btn[data-intro-type="chef"]:hover {
+            transform: translateY(-2px) rotate(1.5deg);
+        }
+
+        .intro-action-btn[data-intro-type="dish"]:hover {
+            transform: translateY(-4px) rotate(-4deg);
+        }
+
+        .intro-action-icon {
+            width: 21px;
+            height: 21px;
+            flex: 0 0 auto;
+            stroke: currentColor;
+            stroke-width: 1.65;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            opacity: 0.92;
+        }
+
         /* 模型占位区域 - 上方留白给3D模型，canvas直接放在这里 */
         .model-placeholder {
             width: 100%;
-            aspect-ratio: 1 / 1;
+            flex: 0 0 56%;
             position: relative;
-            overflow: visible; /* 允许旋转时模型超出 */
+            overflow: visible;
             pointer-events: auto;
             cursor: grab;
         }
@@ -148,11 +254,11 @@
 
         .model-placeholder canvas {
             display: block;
-            width: 100%;
-            height: 100%;
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
         }
 
         /* 卡片详情弹窗 - 与信息面板风格一致 */
@@ -243,19 +349,19 @@
         /* 材料注释弹窗 */
         .material-note {
             position: fixed;
-            z-index: 5000;
-            width: min(380px, calc(100vw - 40px));
-            padding: 18px 18px 16px;
-            border-radius: 22px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
-                        rgba(17, 13, 12, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            box-shadow: 0 28px 90px rgba(0, 0, 0, 0.62);
-            backdrop-filter: blur(26px);
+            z-index: 300;
+            width: min(440px, calc(100vw - 80px));
+            padding: 0;
+            border-radius: 20px;
+            background: rgba(25, 20, 17, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(50px) saturate(1.2);
+            -webkit-backdrop-filter: blur(50px) saturate(1.2);
             opacity: 0;
             visibility: hidden;
-            transform: translate3d(0, 10px, 0) scale(0.96);
-            transition: opacity 0.28s ease, transform 0.28s ease, visibility 0.28s linear;
+            transform: translate3d(0, 10px, 0) scale(0.95);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s linear;
         }
         
         .material-note.is-visible {
@@ -288,7 +394,7 @@
         }
         
         .material-note-meta {
-            display: flex;
+            display: none;
             align-items: center;
             gap: 10px;
             margin-bottom: 10px;
@@ -313,13 +419,44 @@
             color: rgba(255, 250, 245, 0.96);
             line-height: 1.2;
         }
+
+        .material-note-content {
+            padding: 20px;
+        }
         
         .material-note p {
             margin: 0;
+            max-height: min(46vh, 420px);
+            overflow-y: auto;
             font-size: 0.8rem;
-            line-height: 1.75;
+            line-height: 1.7;
             color: rgba(255, 255, 255, 0.7);
             white-space: pre-line;
+            padding-right: 4px;
+        }
+
+        .material-note p::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .material-note p::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.16);
+            border-radius: 999px;
+        }
+
+        .material-note-video {
+            display: none;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            margin: 0;
+            border-radius: 20px 20px 0 0;
+            object-fit: cover;
+            background: rgba(0, 0, 0, 0.32);
+            border: 0;
+        }
+
+        .material-note.has-video .material-note-video {
+            display: block;
         }
         
         .legend-label {
@@ -353,25 +490,23 @@
         /* ====== 移动端竖屏适配 ====== */
         @media (max-width: 768px) and (orientation: portrait) {
             .info-panel {
-                width: calc(100vw - 32px);
-                max-height: 48vh;
-                padding: 14px 14px 16px;
+                width: min(calc(100vw - 32px), 330px);
+                max-height: none;
+                aspect-ratio: 5 / 7;
+                padding: 0 16px 16px;
                 border-radius: 16px;
-                overflow-y: auto;
-                overflow-x: hidden;
-            }
-
-            .info-panel .model-placeholder {
-                aspect-ratio: 1 / 1;
-                max-height: 22vh;
-                width: auto;
-                margin: 0 auto;
                 overflow: hidden;
             }
 
+            .info-panel .model-placeholder {
+                flex-basis: 52%;
+                margin: 0 auto;
+                width: 100%;
+            }
+
             .info-panel .text-content {
-                max-height: none;
-                overflow: visible;
+                flex: 1 1 auto;
+                min-height: 0;
             }
 
             .info-panel h2 {
@@ -385,15 +520,26 @@
             }
 
             .info-panel .description {
-                font-size: 0.68rem;
-                line-height: 1.55;
-                max-height: 80px;
-                overflow-y: auto;
+                display: none;
             }
 
             .info-panel .location {
-                margin-top: 4px;
                 font-size: 0.52rem;
+            }
+
+            .intro-actions {
+                gap: 12px;
+                margin-top: 12px;
+            }
+
+            .intro-action-btn {
+                width: 60px;
+                height: 42px;
+            }
+
+            .intro-action-icon {
+                width: 19px;
+                height: 19px;
             }
 
             /* 竖屏下卡片弹窗居中显示 */
@@ -429,6 +575,8 @@
                 left: 50% !important;
                 top: auto !important;
                 bottom: 16px;
+                max-height: 70vh;
+                overflow-y: auto;
                 transform: translate3d(-50%, 0, 0) scale(0.96);
             }
 
@@ -487,6 +635,22 @@
             <div class="subtitle" id="dishSubtitle"></div>
             <div class="description" id="dishDescription"></div>
             <div class="location" id="dishLocation"></div>
+            <div class="intro-actions">
+                <button type="button" class="intro-action-btn" data-intro-type="dish" aria-label="介紹">
+                    <svg class="intro-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"></path>
+                        <path d="M8 7h8"></path>
+                        <path d="M8 11h7"></path>
+                    </svg>
+                </button>
+                <button type="button" class="intro-action-btn" data-intro-type="chef" aria-label="師傅">
+                    <svg class="intro-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="8" r="3.2"></circle>
+                        <path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path>
+                        <path d="M7.8 4.6C8.8 2.9 11 3 12 4.3c1-1.3 3.2-1.4 4.2.3"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -529,8 +693,11 @@
             <span class="material-note-side" id="materialNoteSide"></span>
             <span class="material-note-index" id="materialNoteIndex"></span>
         </div>
-        <h3 id="materialNoteTitle"></h3>
-        <p id="materialNoteBody"></p>
+        <video class="material-note-video" id="materialNoteVideo" controls playsinline preload="metadata"></video>
+        <div class="material-note-content">
+            <h3 id="materialNoteTitle"></h3>
+            <p id="materialNoteBody"></p>
+        </div>
     </div>
 
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
@@ -567,7 +734,7 @@
         // 获取URL参数
         function getDishIdFromURL() {
             const params = new URLSearchParams(window.location.search);
-            return params.get('dish') || 'claypot';
+            return normalizeDishId(params.get('dish') || 'claypot');
         }
         
         // 模型配置
@@ -626,6 +793,14 @@
                 ai: ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png']
             }
         };
+
+        const dishIdAliases = {
+            'healthy-ribs': 'liuyang-steamed-ribs'
+        };
+
+        function normalizeDishId(dishId) {
+            return dishIdAliases[dishId] || dishId;
+        }
         
         // 菜品元数据
         const dishMeta = {
@@ -637,6 +812,13 @@
             'preserved-veg-pork': { title: '梅菜豬肉', subtitle: 'Preserved Veg Pork', location: 'Hakka · Preserved Flavour' },
             'vermicelli-shrimp': { title: '粉絲蝦煲', subtitle: 'Vermicelli Shrimp', location: 'Cantonese · Seafood Pot' }
         };
+
+        const chefVideoSources = {
+            'claypot': '../food/claypot-rice/video/VID20241112204313.mp4',
+            'steam-buns': '../food/steamed-buns/video/bao_DJI_0044.mp4',
+            'hakka-tofu': '../food/hakka-tofu/video/VID20241215111124.mp4'
+        };
+        const placeholderChefVideo = chefVideoSources['steam-buns'];
         
         // 初始化场景
         function init() {
@@ -670,7 +852,8 @@
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
-            controls.enableZoom = true;
+            controls.enableRotate = false;
+            controls.enableZoom = false;
             controls.enablePan = false;
             controls.target.set(
                 Math.cos(Math.PI) * (RING_RADIUS - 5),
@@ -713,10 +896,18 @@
                 });
             });
 
+            document.querySelectorAll('.intro-action-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    showIntroPopup(this.dataset.introType, dishId);
+                });
+            });
+
             // 点击空白处关闭弹窗
             document.addEventListener('click', function(e) {
-                if (!e.target.closest('.card-popup') && !e.target.closest('.info-panel') && !e.target.closest('#scene-container')) {
+                if (!e.target.closest('.card-popup') && !e.target.closest('.material-note') && !e.target.closest('.info-panel') && !e.target.closest('#scene-container')) {
                     document.querySelectorAll('.card-popup.visible').forEach(p => p.classList.remove('visible'));
+                    closeMaterialNote();
                 }
             });
 
@@ -855,20 +1046,25 @@
             // 面板显示后调整canvas尺寸
             requestAnimationFrame(() => {
                 const w = displayContainer.clientWidth;
+                const h = displayContainer.clientHeight || w;
                 if (w > 0) {
                     const isPortrait = window.innerWidth <= 768 && window.innerHeight > window.innerWidth;
-                    const size = isPortrait ? Math.min(w, window.innerHeight * 0.25) : w;
+                    const size = isPortrait
+                        ? Math.min(w, h, window.innerHeight * 0.25)
+                        : Math.min(w, h);
                     foodModelRenderer.setSize(size, size);
                 }
             });
 
-            // 添加轨道控制器 - 支持鼠标/触控旋转
             const modelControls = new THREE.OrbitControls(foodModelCamera, foodModelRenderer.domElement);
             modelControls.enableDamping = true;
             modelControls.dampingFactor = 0.08;
             modelControls.enableZoom = false;
             modelControls.enablePan = false;
-            modelControls.autoRotate = false;
+            modelControls.enableRotate = true;
+            modelControls.autoRotate = true;
+            modelControls.autoRotateSpeed = 0.85;
+            modelControls.target.set(0, 0, 0);
             window._modelControls = modelControls;
 
             // 添加灯光
@@ -916,12 +1112,11 @@
 
             requestAnimationFrame(animateFoodModel);
 
-            // 更新轨道控制器
             if (window._modelControls) {
                 window._modelControls.update();
             }
 
-            // 模型轻微浮动（不再自动旋转，由用户手动控制旋转）
+            // 模型轻微浮动，視角可由使用者拖拽
             if (foodModel) {
                 const time = Date.now() * 0.001;
                 foodModel.position.y = Math.sin(time * 0.8) * 0.08;
@@ -1105,7 +1300,7 @@
             img.src = card.src;
         }
         
-        // 食物介绍数据（从 MD 文件加载）
+        // 食物介紹資料（從 MD 文件載入）
         let dishDescriptions = {};
 
         // 解析 MD 文件，提取各菜品描述
@@ -1116,30 +1311,49 @@
             let currentContent = [];
 
             for (const line of lines) {
-                // 匹配 ## dish-id 格式的标题
+                // 匹配 ## dish-id 格式的標題
                 const match = line.match(/^##\s+(\S+)/);
                 if (match) {
-                    // 保存上一个 section
-                    if (currentId && currentContent.length > 0) {
-                        descriptions[currentId] = currentContent.join('\n').trim();
+                    // 保存上一個 section
+                    if (currentId) {
+                        descriptions[currentId] = splitIntroContent(currentContent);
                     }
-                    currentId = match[1];
+                    currentId = normalizeDishId(match[1]);
                     currentContent = [];
                 } else if (currentId) {
-                    // 跳过一级标题行
+                    // 跳過一級標題行
                     if (!line.startsWith('# ')) {
                         currentContent.push(line);
                     }
                 }
             }
-            // 保存最后一个 section
-            if (currentId && currentContent.length > 0) {
-                descriptions[currentId] = currentContent.join('\n').trim();
+            // 保存最後一個 section
+            if (currentId) {
+                descriptions[currentId] = splitIntroContent(currentContent);
             }
             return descriptions;
         }
 
-        // 加载描述数据
+        function splitIntroContent(lines) {
+            const paragraphs = lines.join('\n')
+                .replace(/\r/g, '')
+                .split(/\n\s*\n+/)
+                .map(text => text.trim())
+                .filter(Boolean);
+            const chefPattern = /(廚|主廚|chef|Chef|邀請|invited|honored|榮幸|身為|展示|founded|創立|分享)/;
+            let splitIndex = paragraphs.findIndex(text => chefPattern.test(text));
+
+            if (splitIndex <= 0) {
+                splitIndex = Math.max(1, Math.ceil(paragraphs.length / 2));
+            }
+
+            return {
+                dish: paragraphs.slice(0, splitIndex).join('\n\n'),
+                chef: paragraphs.slice(splitIndex).join('\n\n')
+            };
+        }
+
+        // 載入描述資料
         async function loadDescriptions() {
             try {
                 const response = await fetch('../food/food.MD');
@@ -1151,7 +1365,7 @@
             }
         }
 
-        // 更新页面信息
+        // 更新頁面資訊
         function updatePageInfo(dishId) {
             const meta = dishMeta[dishId];
             if (!meta) return;
@@ -1160,13 +1374,8 @@
             document.getElementById('dishSubtitle').textContent = meta.subtitle;
             document.getElementById('dishLocation').textContent = meta.location;
             
-            // 从内嵌数据加载描述
-            const desc = dishDescriptions[dishId];
-            if (desc) {
-                document.getElementById('dishDescription').textContent = desc;
-            } else {
-                document.getElementById('dishDescription').textContent = '';
-            }
+            const desc = dishDescriptions[dishId] || {};
+            document.getElementById('dishDescription').textContent = desc.dish || '';
         }
 
         // 点击画布检测卡片
@@ -1254,6 +1463,113 @@
             popup.classList.add('visible');
         }
 
+        function showIntroPopup(type, dishId) {
+            const note = document.getElementById('materialNote');
+            const sideEl = document.getElementById('materialNoteSide');
+            const indexEl = document.getElementById('materialNoteIndex');
+            const titleEl = document.getElementById('materialNoteTitle');
+            const videoEl = document.getElementById('materialNoteVideo');
+            const bodyEl = document.getElementById('materialNoteBody');
+            const meta = dishMeta[dishId] || {};
+            const copy = dishDescriptions[dishId] || {};
+
+            if (!note || !sideEl || !indexEl || !titleEl || !videoEl || !bodyEl) return;
+
+            const isChef = type === 'chef';
+            const body = isChef
+                ? copy.chef || '師傅內容正在整理中。'
+                : copy.dish || '介紹內容正在整理中。';
+
+            note.dataset.introType = isChef ? 'chef' : 'dish';
+            sideEl.textContent = isChef ? '師傅' : '介紹';
+            indexEl.textContent = meta.subtitle || '';
+            titleEl.textContent = isChef ? '師傅' : '介紹';
+            bodyEl.textContent = body;
+
+            const videoSrc = isChef ? getChefVideoSrc(dishId) : '';
+            if (videoSrc) {
+                videoEl.src = videoSrc;
+                videoEl.hidden = false;
+                note.classList.add('has-video');
+            } else {
+                videoEl.pause();
+                videoEl.removeAttribute('src');
+                videoEl.load();
+                videoEl.hidden = true;
+                note.classList.remove('has-video');
+            }
+
+            note.hidden = false;
+            note.classList.remove('is-visible');
+            positionIntroPopup(note);
+
+            requestAnimationFrame(() => {
+                note.classList.add('is-visible');
+            });
+        }
+
+        function getChefVideoSrc(dishId) {
+            return chefVideoSources[dishId] || placeholderChefVideo;
+        }
+
+        function positionIntroPopup(note) {
+            const isPortrait = window.innerWidth <= 768 && window.innerHeight > window.innerWidth;
+            const infoPanel = document.getElementById('infoPanel');
+            const introType = note.dataset.introType || 'chef';
+
+            note.style.left = '-9999px';
+            note.style.top = '-9999px';
+
+            if (isPortrait || !infoPanel) {
+                note.style.left = '';
+                note.style.top = '';
+                return;
+            }
+
+            const panelRect = infoPanel.getBoundingClientRect();
+            const gap = 20;
+            const preferredWidth = 440;
+            const sideSpace = introType === 'dish'
+                ? panelRect.left - gap - 18
+                : window.innerWidth - panelRect.right - gap - 18;
+            const fittedWidth = Math.max(300, Math.min(preferredWidth, sideSpace));
+
+            note.style.width = `${fittedWidth}px`;
+
+            const noteRect = note.getBoundingClientRect();
+            let left = introType === 'dish'
+                ? panelRect.left - noteRect.width - gap
+                : panelRect.right + gap;
+
+            if (introType === 'dish' && left < 18) {
+                left = 18;
+            } else if (introType !== 'dish' && left + noteRect.width > window.innerWidth - 18) {
+                left = window.innerWidth - noteRect.width - 18;
+            }
+
+            const top = panelRect.top + (panelRect.height / 2) - (noteRect.height / 2);
+
+            note.style.left = `${Math.max(18, Math.min(left, window.innerWidth - noteRect.width - 18))}px`;
+            note.style.top = `${Math.max(18, Math.min(top, window.innerHeight - noteRect.height - 18))}px`;
+        }
+
+        function closeMaterialNote() {
+            const note = document.getElementById('materialNote');
+            const videoEl = document.getElementById('materialNoteVideo');
+            if (!note || note.hidden) return;
+
+            if (videoEl) {
+                videoEl.pause();
+            }
+
+            note.classList.remove('is-visible');
+            setTimeout(() => {
+                if (!note.classList.contains('is-visible')) {
+                    note.hidden = true;
+                }
+            }, 280);
+        }
+
         // 动画循环
         function animate() {
             animationId = requestAnimationFrame(animate);
@@ -1332,6 +1648,22 @@
                     panel.style.left = '50%';
                     panel.style.top = '50%';
                     panel.style.transform = 'translate(-50%, -50%)';
+                }
+            }
+
+            const note = document.getElementById('materialNote');
+            if (note && !note.hidden && note.classList.contains('is-visible')) {
+                positionIntroPopup(note);
+            }
+
+            if (foodModelRenderer) {
+                const displayContainer = document.getElementById('infoPanel')?.querySelector('.model-placeholder');
+                if (displayContainer) {
+                    const size = Math.min(displayContainer.clientWidth || 280, displayContainer.clientHeight || displayContainer.clientWidth || 280);
+                    foodModelRenderer.setSize(size, size);
+                    if (window._modelControls) {
+                        window._modelControls.update();
+                    }
                 }
             }
         }
@@ -1492,9 +1824,7 @@
             const closeBtn = document.getElementById('materialNoteClose');
             if (closeBtn) {
                 closeBtn.addEventListener('click', function() {
-                    const note = document.getElementById('materialNote');
-                    note.classList.remove('is-visible');
-                    setTimeout(() => note.hidden = true, 280);
+                    closeMaterialNote();
                 });
             }
         });
