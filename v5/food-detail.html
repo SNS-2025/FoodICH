@@ -815,11 +815,35 @@
         };
 
         const chefVideoSources = {
-            'claypot': 'food/claypot-rice/video/VID20241112204313.mp4',
-            'steam-buns': 'food/steamed-buns/video/bao_DJI_0044.mp4',
-            'hakka-tofu': 'food/hakka-tofu/video/VID20241215111124.mp4'
+            'claypot': [
+                'food/claypot-rice/video/VID20241112204313.mp4',
+                'food/食物视频/claypot-rice/VID20241112205246.mp4'
+            ],
+            'steam-buns': [
+                'food/食物视频/steamed-buns/bao_DJI_0044.mp4',
+                'food/食物视频/steamed-buns/fen_DJI_0003.mp4',
+                'food/食物视频/steamed-buns/ya_DJI_0006.mp4',
+                'food/食物视频/steamed-buns/steam_DJI_0050.mp4'
+            ],
+            'hakka-tofu': [
+                'food/食物视频/hakka-tofu/VID20241215112321.mp4',
+                'food/食物视频/hakka-tofu/VID20241215111124.mp4',
+                'food/食物视频/hakka-tofu/cut_VID20241215110009.mp4',
+                'food/食物视频/hakka-tofu/fry_VID20241215111725.mp4'
+            ],
+            'liuyang-steamed-ribs': [
+                'food/食物视频/LiuyangSteamedRibs/VID20241124132041.mp4'
+            ],
+            'preserved-veg-pork': [
+                'food/食物视频/preserved-veg-pork/VID-3301450649596766.mp4'
+            ],
+            'vermicelli-shrimp': [
+                'food/食物视频/vermicelli-shrimp/DJI_0047.MP4'
+            ]
         };
         const placeholderChefVideo = chefVideoSources['steam-buns'];
+        let activeChefVideoPlaylist = [];
+        let activeChefVideoIndex = 0;
 
         const chefStories = {
             'claypot': `康哥是香港嚐囍煲仔小菜的主廚，對煲仔飯有著深厚的經驗和見解。我們通過電話聯繫與親自拜訪，誠摯邀請他參與採訪，他欣然應允並分享了寶貴的烹飪心得。
@@ -1546,9 +1570,9 @@ In the discussion of ingredient substitution, the dish also shows the reality of
             titleEl.textContent = isChef ? '師傅' : '介紹';
             bodyEl.textContent = body;
 
-            const videoSrc = isChef ? getChefVideoSrc(dishId) : '';
-            if (videoSrc) {
-                videoEl.src = videoSrc;
+            const videoSources = isChef ? getChefVideoSources(dishId) : [];
+            if (videoSources.length) {
+                setChefVideoPlaylist(videoEl, videoSources);
                 videoEl.hidden = false;
                 note.classList.add('has-video');
             } else {
@@ -1568,8 +1592,25 @@ In the discussion of ingredient substitution, the dish also shows the reality of
             });
         }
 
-        function getChefVideoSrc(dishId) {
-            return chefVideoSources[dishId] || placeholderChefVideo;
+        function getChefVideoSources(dishId) {
+            const sources = chefVideoSources[dishId] || placeholderChefVideo || [];
+            return Array.isArray(sources) ? sources : [sources];
+        }
+
+        function setChefVideoPlaylist(videoEl, sources) {
+            activeChefVideoPlaylist = sources.filter(Boolean);
+            activeChefVideoIndex = 0;
+            videoEl.pause();
+            videoEl.src = activeChefVideoPlaylist[activeChefVideoIndex];
+            videoEl.load();
+        }
+
+        function playNextChefVideo(videoEl) {
+            if (activeChefVideoPlaylist.length <= 1) return;
+            activeChefVideoIndex = (activeChefVideoIndex + 1) % activeChefVideoPlaylist.length;
+            videoEl.src = activeChefVideoPlaylist[activeChefVideoIndex];
+            videoEl.load();
+            videoEl.play().catch(() => {});
         }
 
         function positionIntroPopup(note) {
@@ -1885,6 +1926,13 @@ In the discussion of ingredient substitution, the dish also shows the reality of
             if (closeBtn) {
                 closeBtn.addEventListener('click', function() {
                     closeMaterialNote();
+                });
+            }
+
+            const introVideo = document.getElementById('materialNoteVideo');
+            if (introVideo) {
+                introVideo.addEventListener('ended', function() {
+                    playNextChefVideo(introVideo);
                 });
             }
         });

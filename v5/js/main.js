@@ -230,22 +230,25 @@ const dishAssets = {
     claypot: {
         displayItems: createImageItems('food/claypot-rice/AI', ['caihong.png', 'taiguo.png', 'xingkong.png'], 'Clay Pot Rice AI'),
         galleryItems: createImageItems('food/claypot-rice/Reality', ['PressedRice.png', 'a (3).png', 'a (4).png', 'lachang.png', 'paigu.png', 'wodanniu.png'], 'Clay Pot Rice Reality'),
-        videoItems: createVideoItems('food/claypot-rice/video', ['VID20241112204653.mp4', 'VID20241112204313.mp4'], 'Clay Pot Rice Video')
+        videoItems: mergeMediaGroups(
+            createVideoItems('food/claypot-rice/video', ['VID20241112204653.mp4', 'VID20241112204313.mp4'], 'Clay Pot Rice Video'),
+            createVideoItems('food/食物视频/claypot-rice', ['VID20241112205246.mp4'], 'Clay Pot Rice Video')
+        )
     },
     steamBuns: {
         displayItems: [],
         galleryItems: createImageItems('food/steamed-buns/Reality', ['1.png', '2.png', '3.png', '4.png', '5.png'], 'Steam Buns Reality'),
-        videoItems: createVideoItems('food/steamed-buns/video', ['fen_DJI_0003.mp4', 'ya_DJI_0006.mp4', 'bao_DJI_0044.mp4', 'steam_DJI_0050.mp4'], 'Steam Buns Video')
+        videoItems: createVideoItems('food/食物视频/steamed-buns', ['fen_DJI_0003.mp4', 'ya_DJI_0006.mp4', 'bao_DJI_0044.mp4', 'steam_DJI_0050.mp4'], 'Steam Buns Video')
     },
     hakkaTofu: {
         displayItems: createImageItems('food/hakka-tofu/AI', ['79e1578f883159895015bffe8915e0d0e51d6949.png'], 'Hakka Tofu AI'),
         galleryItems: createImageItems('food/hakka-tofu/Reality', ['73baa3575d77c954323cf25f93704f58aecbeb4b.jpg', '1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg', '6.jpg', '7.jpg', '8.jpg'], 'Hakka Tofu Reality'),
-        videoItems: createVideoItems('food/hakka-tofu/video', ['VID20241215111124.mp4', 'VID20241215111137.mp4', 'cut_VID20241215110009.mp4', 'fry_VID20241215111725.mp4'], 'Hakka Tofu Video')
+        videoItems: createVideoItems('food/食物视频/hakka-tofu', ['VID20241215112321.mp4', 'VID20241215111124.mp4', 'cut_VID20241215110009.mp4', 'fry_VID20241215111725.mp4'], 'Hakka Tofu Video')
     },
     liuyangSteamedRibs: {
         displayItems: createImageItems('food/LiuyangSteamedRibs/AI', ['1.png', '2.png', '3.png', '4.png'], 'Liuyang Steamed Ribs AI'),
         galleryItems: createImageItems('food/LiuyangSteamedRibs/Reality', ['1.png', '2.png', '3.jpg', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png'], 'Liuyang Steamed Ribs Reality'),
-        videoItems: createVideoItems('food/LiuyangSteamedRibs/video', ['videoplayback.mp4'], 'Liuyang Steamed Ribs Video')
+        videoItems: createVideoItems('food/食物视频/LiuyangSteamedRibs', ['VID20241124132041.mp4'], 'Liuyang Steamed Ribs Video')
     },
     stirFriedBeef: {
         displayItems: createImageItems('food/spicy-ribs/AI', ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png'], 'Stir-fried Yellow Beef AI'),
@@ -255,12 +258,12 @@ const dishAssets = {
     preservedVegPork: {
         displayItems: createImageItems('food/preserved-veg-pork/AI', ['1.png', '2.png', '3.png', '4.png', '5.png'], 'Preserved Veg Pork AI'),
         galleryItems: createImageItems('food/preserved-veg-pork/Reality', ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png'], 'Preserved Veg Pork Reality'),
-        videoItems: createVideoItems('food/preserved-veg-pork/video', ['videoplayback.mp4'], 'Preserved Veg Pork Video')
+        videoItems: createVideoItems('food/食物视频/preserved-veg-pork', ['VID-3301450649596766.mp4'], 'Preserved Veg Pork Video')
     },
     vermicelliShrimp: {
         displayItems: createImageItems('food/vermicelli-shrimp/AI', ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png'], 'Vermicelli Shrimp AI'),
         galleryItems: createImageItems('food/vermicelli-shrimp/Reality', ['DJI_0001.JPG', 'DJI_0014.JPG', 'DJI_0017.JPG', 'DJI_0021.JPG', 'DJI_0035.JPG', 'DJI_0042.JPG', 'DJI_0048.JPG'], 'Vermicelli Shrimp Reality'),
-        videoItems: createVideoItems('food/vermicelli-shrimp/video', ['videoplayback.mp4'], 'Vermicelli Shrimp Video')
+        videoItems: createVideoItems('food/食物视频/vermicelli-shrimp', ['DJI_0047.MP4'], 'Vermicelli Shrimp Video')
     }
 };
 
