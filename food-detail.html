@@ -71,16 +71,16 @@
         .info-panel {
             position: fixed;
             z-index: 80; /* 在光环层之上，模型层之下 */
-            width: min(360px, calc(100vw - 60px), calc((100vh - 80px) * 0.72));
-            aspect-ratio: 5 / 7;
+            width: min(334px, calc(100vw - 60px), calc((100vh - 80px) * 0.72));
+            aspect-ratio: 5 / 6.75;
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
             padding-top: 0;
-            padding-bottom: 22px;
-            padding-left: 24px;
-            padding-right: 24px;
-            border-radius: 20px;
+            padding-bottom: 18px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border-radius: 18px;
             /* 更透明 + 强毛玻璃效果 */
             background: rgba(25, 20, 17, 0.65);
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -103,14 +103,14 @@
             min-height: 0;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            justify-content: center;
         }
 
         .info-panel h2 {
             font-family: 'Libre Baskerville', Georgia, serif;
-            font-size: 1.6rem;
+            font-size: 1.46rem;
             color: rgba(255, 250, 245, 0.95);
-            margin: 0 0 6px;
+            margin: 0 0 4px;
             line-height: 1.2;
         }
 
@@ -120,7 +120,7 @@
             letter-spacing: 0.2em;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 10px;
+            margin-bottom: 7px;
         }
 
         .info-panel .description {
@@ -141,14 +141,14 @@
             justify-content: center;
             align-items: flex-end;
             gap: 0;
-            margin-top: 22px;
-            height: 54px;
+            margin-top: 15px;
+            height: 50px;
         }
 
         .intro-action-btn {
             position: relative;
-            width: 72px;
-            height: 48px;
+            width: 66px;
+            height: 44px;
             padding: 0;
             border-radius: 4px 4px 18px 18px;
             border: 1px solid rgba(255, 255, 255, 0.16);
@@ -227,8 +227,8 @@
         }
 
         .intro-action-icon {
-            width: 21px;
-            height: 21px;
+            width: 20px;
+            height: 20px;
             flex: 0 0 auto;
             stroke: currentColor;
             stroke-width: 1.65;
@@ -241,7 +241,7 @@
         /* 模型占位区域 - 上方留白给3D模型，canvas直接放在这里 */
         .model-placeholder {
             width: 100%;
-            flex: 0 0 56%;
+            flex: 0 0 50%;
             position: relative;
             overflow: visible;
             pointer-events: auto;
@@ -490,16 +490,16 @@
         /* ====== 移动端竖屏适配 ====== */
         @media (max-width: 768px) and (orientation: portrait) {
             .info-panel {
-                width: min(calc(100vw - 32px), 330px);
+                width: min(calc(100vw - 32px), 306px);
                 max-height: none;
-                aspect-ratio: 5 / 7;
-                padding: 0 16px 16px;
+                aspect-ratio: 5 / 6.75;
+                padding: 0 15px 14px;
                 border-radius: 16px;
                 overflow: hidden;
             }
 
             .info-panel .model-placeholder {
-                flex-basis: 52%;
+                flex-basis: 48%;
                 margin: 0 auto;
                 width: 100%;
             }
@@ -510,7 +510,7 @@
             }
 
             .info-panel h2 {
-                font-size: 1.1rem;
+                font-size: 1.04rem;
                 margin-bottom: 2px;
             }
 
@@ -529,12 +529,13 @@
 
             .intro-actions {
                 gap: 12px;
-                margin-top: 12px;
+                margin-top: 9px;
+                height: 46px;
             }
 
             .intro-action-btn {
-                width: 60px;
-                height: 42px;
+                width: 56px;
+                height: 39px;
             }
 
             .intro-action-icon {
@@ -821,33 +822,61 @@
         const placeholderChefVideo = chefVideoSources['steam-buns'];
 
         const chefStories = {
-            'claypot': `這位粵菜主廚把煲仔飯看成一門由器具、火候與時間共同塑造的手藝。他特別在意不同年代的飯煲如何改變米飯的鬆散度、鍋巴與香氣，也認為 AI 可以幫助學徒看見火力過猛、熱力不足或米飯被壓得太實時會產生的差異。對他來說，煲仔飯不是煮熟就完成，而是慢慢「煨」出來的；有些切臘腸、判斷米粒狀態的細節，仍然要靠手勢和現場經驗才能說清楚。
+            'claypot': `康哥是香港嚐囍煲仔小菜的主廚，對煲仔飯有著深厚的經驗和見解。我們通過電話聯繫與親自拜訪，誠摯邀請他參與採訪，他欣然應允並分享了寶貴的烹飪心得。
 
-The Cantonese chef treats clay pot rice as a craft shaped by vessels, heat, and time. He pays close attention to how different generations of rice pots change the looseness of the grains, the crust, and the aroma. He also sees AI as a useful teaching tool: apprentices could compare what happens when heat is too strong, too weak, or when the rice is pressed too tightly. For him, clay pot rice is not simply cooked; it is slowly simmered into place. Some details, such as slicing Chinese sausage or judging the strength of each grain, still need gestures and lived kitchen experience.`,
+Kang is the head chef at Chang Hei Claypot Rice in Hong Kong, with deep expertise and insights into claypot rice. Through phone calls and in-person visits, we sincerely invited him to participate in the interview. He graciously accepted and shared his valuable culinary insights.
 
-            'hakka-tofu': `這位客家料理實踐者希望把家常的客家釀豆腐做成更容易被家庭廚房掌握的版本。他願意接受 AI 帶來的擺盤想像，例如加入蔬菜讓畫面與營養更豐富，但他很清楚哪些改動會讓味道離開客家釀豆腐本身。真正被他採納的不是整份 AI 食譜，而是在不改變主味的前提下，加入少量玉米與更清爽的呈現方式。他也提醒我們，缺少勾芡用的澱粉會讓豆腐口感失去柔滑，而 AI 很難呈現人們心中「真的好吃」背後的情感差異。
+在共創過程中，他把煲仔飯看成由器具、火候與時間共同塑造的手藝。他特別在意不同年代的飯煲如何改變米飯的鬆散度、鍋巴與香氣，也認為 AI 可以幫助學徒看見火力過猛、熱力不足或米飯被壓得太實時會產生的差異。對他來說，煲仔飯不是煮熟就完成，而是慢慢「煨」出來的；有些切臘腸、判斷米粒狀態的細節，仍然要靠手勢和現場經驗才能說清楚。
 
-The Hakka cook wants to make stuffed tofu easier for home kitchens without losing its inherited taste. He is open to AI's visual ideas, such as a brighter vegetable garnish, but he is careful about changes that would pull the dish away from Hakka flavor. What he adopted was not the full AI recipe, but a modest adjustment: a little corn and a lighter presentation that does not disturb the main taste. He also notes that without starch for thickening, the tofu loses its tender smoothness, and that AI still struggles to carry the emotional difference behind what people remember as truly delicious.`,
+In the co-creation process, he treats clay pot rice as a craft shaped by vessels, heat, and time. He pays close attention to how different generations of rice pots change the looseness of the grains, the crust, and the aroma. He also sees AI as a useful teaching tool: apprentices could compare what happens when heat is too strong, too weak, or when the rice is pressed too tightly. For him, clay pot rice is not simply cooked; it is slowly simmered into place. Some details, such as slicing Chinese sausage or judging the strength of each grain, still need gestures and lived kitchen experience.`,
 
-            'steam-buns': `這位點心師傅同時有設計背景，所以他看包子的方式既重視手感，也重視畫面細節。他指出，包子的摺褶、收口與手勢很難只靠文字描述，AI 也容易把中式麵點工具誤生成西式糕點工具。他把在法式甜點店學到的 poolish 隔夜發酵法帶回包子製作：前一晚用水、麵粉和少量酵母做成種，隔天揉麵時加入，讓包子更柔軟、老化更慢。他也會敏銳地看出 AI 圖像裡過度油亮、筷子角度一致、褶子太假的痕跡，提醒我們手工點心的真實感藏在不完全一致的細節裡。
+            'hakka-tofu': `身為客家人，小李（化名）為我們展示了他們家庭製作客家釀豆腐的過程，並嘗試使用 AI 記錄不同的偶然性；他也根據 AI 的提示，創作了一道保留傳統味道的創新菜。
 
-The dim sum chef has a design background, so he reads steamed buns through both hand technique and visual detail. He points out that pleating, closing, and shaping gestures are hard to describe in words, and AI often confuses Chinese bun-making tools with Western pastry equipment. He brings a poolish method learned in a French pastry shop into bun-making: water, flour, and a small amount of yeast are mixed the night before, chilled overnight, then added to the dough the next day to make the buns softer and slower to age. He is also quick to spot AI artifacts such as over-greasy styling, identical chopstick angles, and fake-looking folds, reminding us that handmade dim sum feels real because its details are never perfectly uniform.`,
+As a Hakka cook, Xiao Li (pseudonym) showed us his family's process for making Hakka stuffed tofu. He also tried using AI to record moments of variation and, following AI prompts, created an innovative dish that still preserved the traditional taste.
 
-            'liuyang-steamed-ribs': `這位蒸菜實踐者把瀏陽蒸排骨理解為鹹、辣、鮮與蒸汽時間的平衡。她曾嘗試讓 AI 延展出高蛋白套餐與更健康的組合，但當 AI 把菜推向檸檬汁、蜂蜜等分子料理式醬汁時，她認為已經偏離了原本的鹹辣鮮香。她更在意那些能真正改變風味、卻仍留在傳統語境裡的小變化，例如用乾辣椒粉替代鮮辣椒，帶出更煙燻、更厚實的辣味；又或者用柴火灶與木蒸籠，讓燃木香氣在蒸製中滲入排骨，形成現代電蒸鍋很難複製的味道。
+他的判斷很清楚：AI 的擺盤想像可以被採納，例如加入蔬菜讓畫面與營養更豐富；但只要食材改動會讓味道離開客家釀豆腐本身，他就會保留距離。最後真正被採納的不是整份 AI 食譜，而是在不改變主味的前提下，加入少量玉米與更清爽的呈現方式。他也提醒我們，缺少勾芡用的澱粉會讓豆腐失去柔滑，而 AI 很難呈現人們心中「真的好吃」背後的情感差異。
 
-The steamed-ribs cook understands Liuyang steamed ribs as a balance of saltiness, heat, savoriness, and time inside steam. She explored AI-generated ideas for healthier, high-protein set meals, but when AI pushed the dish toward molecular-style sauces with lemon juice and honey, she felt it had moved too far from the original salty, spicy, savory profile. What matters more to her are small changes that transform flavor while staying inside the dish's tradition: replacing fresh chilies with dried chili powder for a smokier, earthier heat, or using a wood-fired stove and wooden steamer so the aroma of burning wood infuses the ribs in a way modern electric steamers cannot reproduce.`,
+His judgment is precise: AI's plating ideas can be useful, such as adding vegetables for stronger visual and nutritional balance, but changes that pull the dish away from Hakka flavor have to be resisted. What he finally adopted was not the full AI recipe, but a modest adjustment: a little corn and a lighter presentation that does not disturb the main taste. He also notes that without starch for thickening, the tofu loses its tender smoothness, and that AI still struggles to carry the emotional difference behind what people remember as truly delicious.`,
 
-            'stir-fried-beef': `這位在倫敦工作的湘菜主廚長年面對海外食材與客人口味的限制。他會用土耳其辣椒替代在中國常見的螺絲椒，以保持新鮮度與成本平衡；也會因為外國客人的接受度，調整牛肉切片厚度與辣椒用量。但他仍然很清楚小炒黃牛肉的核心：辣椒應該被切碎並炒到入味，而不是像 AI 圖像裡那樣完整、鮮亮、像剛被拼貼到盤子上。對他來說，火候過高會讓牛肉變老、鍋底發焦；真正的湘菜鍋氣來自速度、熱度與食材狀態的精準配合。
+            'steam-buns': `我們很榮幸邀請到廚師王，與我們分享她對包子的見解，探討這一傳統美食的深厚文化底蘊及其在現代社會的演變。
 
-The Hunan chef working in London constantly negotiates between overseas ingredient limits and local diners' preferences. He may replace Chinese spiral chilies with Turkish chilies to keep the dish fresh and affordable, and he may adjust beef thickness and chili levels for foreign customers. Still, he is precise about the core of Hunan-style stir-fried beef: the chilies should be chopped and cooked into the dish, not appear whole, bright, and freshly assembled as in some AI images. For him, excessive heat toughens the beef and burns the bottom of the wok; real Hunan wok aroma comes from the exact coordination of speed, heat, and ingredient state.`,
+We are honored to have invited Chef Wang to share her insights on steam buns, exploring the profound cultural heritage of this traditional delicacy and its evolution in modern society.
 
-            'preserved-veg-pork': `這位梅菜豬肉實踐者把這道菜連回母親教她的家傳方法。她記得家裡炒乾梅菜時會加入豬油，讓梅菜的香氣更厚、更溫潤；但在倫敦，食材條件不同，這個做法需要被調整。她也留意到海外五花肉常被切得較薄，會改變成品的口感與香氣。對她來說，梅菜扣肉的關鍵不只在肉，還在醬汁是否能均勻滲入：如果食材中沒有為滷汁留出空間，味道就會不平均。她習慣用紅糖炒糖色，避免冰糖過易焦化，並在快完成時再加入蒜，讓香氣最後釋放出來。
+這位點心師傅同時有設計背景，所以她看包子的方式既重視手感，也重視畫面細節。她指出，包子的摺褶、收口與手勢很難只靠文字描述，AI 也容易把中式麵點工具誤生成西式糕點工具。她把在法式甜點店學到的 poolish 隔夜發酵法帶回包子製作，讓包子更柔軟、老化更慢；同時也能敏銳看出 AI 圖像裡過度油亮、筷子角度一致、褶子太假的痕跡。
 
-The preserved-vegetable pork cook connects the dish to a family method taught by her mother. At home, dried mustard greens were stir-fried with lard, giving the vegetables a deeper, warmer aroma; in London, different ingredient conditions mean that this method has to be adapted. She also notices that pork belly abroad is often sliced thinner, changing both texture and flavor. For her, the key is not only the pork but how evenly the braising sauce enters the dish: without leaving a well for the sauce, the seasoning becomes uneven. She prefers brown sugar for caramelizing because rock sugar burns more easily, and she adds garlic near the end so its fragrance opens at the final moment.`,
+The dim sum chef also has a design background, so she reads steamed buns through both hand technique and visual detail. She points out that pleating, closing, and shaping gestures are hard to describe in words, and AI often confuses Chinese bun-making tools with Western pastry equipment. She brings a poolish method learned in a French pastry shop into bun-making to make the buns softer and slower to age, while also spotting AI artifacts such as over-greasy styling, identical chopstick angles, and fake-looking folds.`,
 
-            'vermicelli-shrimp': `這位長期生活在海外的烹飪者對食材替代特別敏感。她知道普通外國超市很難買到帶頭大蝦，若只能用去殼蝦，整道粉絲蝦煲的鮮味就會變弱。她也非常在意粉絲泡發的水溫和時間：泡太久會過軟，後續吸汁能力也會改變。為了給外國朋友做這道菜，她會把香菜換成 parsley，用黃油替代部分醬油來做蒜香醬，並加入洋蔥增加香氣。她的小技巧是先把蒜末焯水，避免下鍋後太快焦黑；同時她也提醒，AI 生成的蝦若太卡通，就會失去真實海鮮應有的質感。
+            'liuyang-steamed-ribs': `我們邀請到了湘菜主廚張師傅，分享了他對瀏陽蒸排骨的理解，以及如何在保持傳統工藝的同時，用 AI 探索食材搭配的新可能。
 
-The cook who has lived overseas for many years is especially sensitive to ingredient substitution. She knows that large head-on prawns are hard to find in many foreign supermarkets; when peeled shrimp are used instead, the whole pot loses some of its depth. She also watches the soaking temperature and timing of the vermicelli closely: if it soaks too long, it becomes too soft and changes how it absorbs sauce. When cooking for foreign friends, she may replace cilantro with parsley, use butter instead of part of the soy sauce in the garlic sauce, and add onions for extra aroma. Her small trick is to blanch minced garlic first so it does not burn too dark in the oil, while she also warns that AI-generated shrimp can look too cartoonish to carry the texture of real seafood.`
+We invited Chef Zhang, a Xiang cuisine master chef, to share his understanding of Liuyang steamed ribs and how to use AI to explore new possibilities in ingredient pairing while maintaining traditional craftsmanship.
+
+在後續討論中，這道菜被理解為鹹、辣、鮮與蒸汽時間的平衡。AI 可以延展出高蛋白套餐與更健康的組合，但當它把菜推向檸檬汁、蜂蜜等分子料理式醬汁時，就會偏離原本的鹹辣鮮香。真正有價值的創新更像是傳統內部的小變化：用乾辣椒粉替代鮮辣椒，帶出煙燻和厚實的辣味；或用柴火灶與木蒸籠，讓燃木香氣在蒸製中滲入排骨。
+
+In the later discussion, the dish is understood as a balance of saltiness, heat, savoriness, and time inside steam. AI can extend it into healthier, high-protein set meals, but when it pushes the dish toward molecular-style sauces with lemon juice and honey, it moves away from the original salty, spicy, savory profile. The more meaningful innovations are small changes from within the tradition: replacing fresh chilies with dried chili powder for a smokier, earthier heat, or using a wood-fired stove and wooden steamer so the aroma of burning wood infuses the ribs.`,
+
+            'stir-fried-beef': `我們邀請到了湘菜廚師劉師傅，分享了他對小炒黃牛肉火候掌控的心得，並嘗試用 AI 模擬不同炒制參數下的風味變化。
+
+We invited Chef Liu, a Xiang cuisine chef, to share his insights on controlling the heat for stir-fried beef, and attempted to use AI to simulate flavor changes under different stir-frying parameters.
+
+他的經驗來自長期在海外廚房裡調整湘菜：有時需要用土耳其辣椒替代中國常見的螺絲椒，也會因外國客人的接受度調整牛肉切片厚度與辣椒用量。但他仍然很清楚小炒黃牛肉的核心：辣椒應該被切碎並炒到入味，而不是像 AI 圖像裡那樣完整、鮮亮、像剛被拼貼到盤子上。火候過高會讓牛肉變老、鍋底發焦；真正的鍋氣來自速度、熱度與食材狀態的精準配合。
+
+His experience comes from adapting Hunan cooking in an overseas kitchen: sometimes Turkish chilies replace the Chinese spiral chilies, and beef thickness or chili level may be adjusted for foreign diners. Still, he is precise about the core of Hunan-style stir-fried beef: the chilies should be chopped and cooked into the dish, not appear whole, bright, and freshly assembled as in some AI images. Excessive heat toughens the beef and burns the bottom of the wok; real wok aroma comes from the exact coordination of speed, heat, and ingredient state.`,
+
+            'preserved-veg-pork': `我們邀請到了客家料理傳承人陳阿姨，展示了她家傳的梅菜豬肉製作技法，並探索 AI 如何幫助記錄和傳承這門手藝。
+
+We invited Auntie Chen, a Hakka cuisine inheritor, to demonstrate her family's traditional techniques for making preserved vegetable pork, and explored how AI can help record and pass on this culinary art.
+
+這道菜的故事連回母親教她的家傳方法：家裡炒乾梅菜時會加入豬油，讓梅菜香氣更厚、更溫潤；但在倫敦，食材條件不同，做法需要被調整。她也留意到海外五花肉常被切得較薄，會改變口感與香氣。對她來說，關鍵不只在肉，還在醬汁是否能均勻滲入；她習慣用紅糖炒糖色，避免冰糖過易焦化，並在快完成時再加入蒜，讓香氣最後釋放出來。
+
+The story of this dish connects back to a family method taught by her mother: at home, dried mustard greens were stir-fried with lard, giving them a deeper, warmer aroma; in London, different ingredient conditions mean the method has to be adapted. She also notices that pork belly abroad is often sliced thinner, changing both texture and flavor. For her, the key is not only the pork but how evenly the sauce enters the dish. She prefers brown sugar for caramelizing because rock sugar burns more easily, and she adds garlic near the end so its fragrance opens at the final moment.`,
+
+            'vermicelli-shrimp': `我們邀請到了粵菜廚師何師傅，分享了他對粉絲蝦煲的烹飪秘訣，以及如何運用 AI 構思海鮮與粉絲的新穎搭配方式。
+
+We invited Chef He, a Cantonese chef, to share his cooking secrets for vermicelli shrimp pot, and how to use AI to conceptualize novel pairing methods for seafood and vermicelli.
+
+在食材替代的討論裡，這道菜也呈現出海外烹飪的現實：普通外國超市很難買到帶頭大蝦，若只能用去殼蝦，整道粉絲蝦煲的鮮味就會變弱。粉絲泡發的水溫和時間也很重要，泡太久會過軟，後續吸汁能力會改變。為了給外國朋友做這道菜，可以把香菜換成 parsley，用黃油替代部分醬油來做蒜香醬，並加入洋蔥增加香氣；小技巧是先把蒜末焯水，避免下鍋後太快焦黑。
+
+In the discussion of ingredient substitution, the dish also shows the reality of cooking overseas: large head-on prawns are hard to find in many foreign supermarkets, and peeled shrimp make the whole pot taste less deep. The soaking temperature and timing of the vermicelli also matter; if it soaks too long, it becomes too soft and changes how it absorbs sauce. When cooking for foreign friends, cilantro can be replaced with parsley, butter can stand in for part of the soy sauce in the garlic sauce, and onions can add extra aroma. A useful trick is to blanch minced garlic first so it does not burn too dark in the oil.`
         };
         
         // 初始化场景
